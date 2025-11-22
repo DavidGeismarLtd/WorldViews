@@ -23,6 +23,11 @@
         <!-- Name and Description -->
         <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">
           <%= @persona.name %>
+          <% unless @persona.official? %>
+            <span class="inline-block ml-3 px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm font-semibold rounded-full border border-white/30">
+              Custom Persona
+            </span>
+          <% end %>
         </h1>
         <p class="text-xl sm:text-2xl text-white/90 italic max-w-2xl mx-auto mb-8">
           "<%= @persona.description %>"
@@ -30,13 +35,23 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-          <!-- Subscribe Button -->
-          <button onclick="alert('🚧 Coming soon! Subscribe to get <%= @persona.name %>\'s hot takes delivered to your inbox.')" class="inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-            </svg>
-            <span>Follow <%= @persona.name %>'s Takes</span>
-          </button>
+          <% if @persona.editable_by?(current_user) %>
+            <!-- Edit Button (for persona owner) -->
+            <%= link_to edit_persona_path(@persona), class: "inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" do %>
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              <span>Edit Persona</span>
+            <% end %>
+          <% else %>
+            <!-- Subscribe Button -->
+            <button onclick="alert('🚧 Coming soon! Subscribe to get <%= @persona.name %>\'s hot takes delivered to your inbox.')" class="inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+              </svg>
+              <span>Follow <%= @persona.name %>'s Takes</span>
+            </button>
+          <% end %>
 
           <!-- Share Dropdown -->
           <div class="relative" data-controller="dropdown">

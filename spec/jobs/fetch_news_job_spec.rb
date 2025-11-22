@@ -9,6 +9,10 @@ RSpec.describe FetchNewsJob, type: :job do
 
   describe '#perform' do
     context 'with mode: :latest' do
+      let!(:official_persona1) { create(:persona, :official, active: true, display_order: 1) }
+      let!(:official_persona2) { create(:persona, :official, active: true, display_order: 2) }
+      let!(:custom_persona) { create(:persona, :custom, active: true, display_order: 3) }
+
       let(:results) do
         {
           new: [create(:news_story), create(:news_story)],
@@ -40,21 +44,26 @@ RSpec.describe FetchNewsJob, type: :job do
         expect(result[:skipped].count).to eq(1)
       end
 
-      it 'queues interpretation jobs for new stories only' do
-        allow(GenerateInterpretationsJob).to receive(:perform_later)
-
+      it 'generates interpretations synchronously for new stories and official personas only' do
         described_class.new.perform(mode: :latest)
 
-        expect(GenerateInterpretationsJob).to have_received(:perform_later).twice
+        # Should generate 2 stories × 2 official personas = 4 interpretations
+        expect(Interpretation.count).to eq(4)
+
+        # Verify interpretations were created for official personas only
+        results[:new].each do |story|
+          expect(Interpretation.exists?(news_story: story, persona: official_persona1)).to be true
+          expect(Interpretation.exists?(news_story: story, persona: official_persona2)).to be true
+          expect(Interpretation.exists?(news_story: story, persona: custom_persona)).to be false
+        end
       end
 
-      it 'does not queue interpretation jobs for updated stories' do
-        allow(GenerateInterpretationsJob).to receive(:perform_later)
-
+      it 'does not generate interpretations for updated stories' do
         described_class.new.perform(mode: :latest)
 
-        # Should only be called for the 2 new stories, not the 1 updated
-        expect(GenerateInterpretationsJob).to have_received(:perform_later).exactly(2).times
+        # Should only generate for the 2 new stories, not the 1 updated
+        updated_story = results[:updated].first
+        expect(Interpretation.where(news_story: updated_story).count).to eq(0)
       end
 
       it 'accepts custom categories' do
@@ -138,12 +147,36 @@ RSpec.describe FetchNewsJob, type: :job do
         allow(service).to receive(:fetch_latest_news).and_return(results)
       end
 
-      it 'does not queue any interpretation jobs' do
-        allow(GenerateInterpretationsJob).to receive(:perform_later)
-
+      it 'does not generate any interpretations' do
         described_class.new.perform(mode: :latest)
 
-        expect(GenerateInterpretationsJob).not_to have_received(:perform_later)
+        expect(Interpretation.count).to eq(0)
+      end
+    end
+
+    context 'when interpretation generation fails' do
+      let!(:official_persona) { create(:persona, :official, active: true) }
+      let(:results) do
+        {
+          new: [create(:news_story)],
+          updated: [],
+          skipped: [],
+          total: 1
+        }
+      end
+
+      before do
+        allow(service).to receive(:fetch_latest_news).and_return(results)
+        allow(InterpretationGeneratorService).to receive(:new).and_raise(StandardError, 'LLM API Error')
+      end
+
+      it 'logs the error and continues without raising' do
+        expect {
+          described_class.new.perform(mode: :latest)
+        }.not_to raise_error
+
+        # Job should complete successfully even if interpretation generation fails
+        expect(Interpretation.count).to eq(0)
       end
     end
   end

@@ -1,0 +1,26 @@
+<% if resource.errors.any? %>
+  <div id="error_explanation" data-turbo-cache="false" class="mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
+    <div class="flex items-start">
+      <div class="flex-shrink-0">
+        <span class="text-2xl">⚠️</span>
+      </div>
+      <div class="ml-3 flex-1">
+        <h3 class="text-sm font-bold text-red-800 mb-2">
+          <% if resource.errors.count == 1 %>
+            Oops! There's an issue with your <%= resource.class.model_name.human.downcase %>
+          <% else %>
+            Oops! There are <%= resource.errors.count %> issues with your <%= resource.class.model_name.human.downcase %>
+          <% end %>
+        </h3>
+        <ul class="space-y-1">
+          <% resource.errors.full_messages.each do |message| %>
+            <li class="text-sm text-red-700 flex items-start">
+              <span class="mr-2">•</span>
+              <span><%= message %></span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   resources :news_stories, only: [ :index, :show ]
 
   # Personas
-  resources :personas, only: [ :index, :show ], param: :slug
+  resources :personas, only: [ :index, :show, :new, :create, :edit, :update, :destroy ], param: :slug
 
   # Interpretations
   resources :interpretations, only: [ :show ]

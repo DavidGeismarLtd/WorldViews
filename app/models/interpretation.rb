@@ -16,7 +16,7 @@ class Interpretation < ApplicationRecord
 
   # Instance methods
   def cache_key_name
-    "interpretation/#{news_story_id}/#{persona_id}/v1"
+    "interpretation/#{news_story_id}/#{persona_id}/v2"
   end
 
   def mark_as_cached!

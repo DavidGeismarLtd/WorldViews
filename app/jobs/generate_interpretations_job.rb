@@ -2,7 +2,7 @@
 class GenerateInterpretationsJob < ApplicationJob
   queue_as :default
 
-  # Generate interpretations for all active personas
+  # Generate interpretations for all official base personas (or specific persona if provided)
   def perform(news_story_id, persona_id = nil)
     news_story = NewsStory.find(news_story_id)
 
@@ -11,8 +11,8 @@ class GenerateInterpretationsJob < ApplicationJob
       persona = Persona.find(persona_id)
       generate_for_persona(news_story, persona)
     else
-      # Generate for all active personas
-      Persona.active.ordered.each do |persona|
+      # Generate for all official base personas (the 6 core personas)
+      Persona.active.official.ordered.each do |persona|
         generate_for_persona(news_story, persona)
       end
     end

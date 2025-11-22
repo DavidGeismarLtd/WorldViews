@@ -36,7 +36,8 @@ class NewsStory < ApplicationRecord
   end
 
   def generate_interpretations!
-    Persona.active.ordered.each do |persona|
+    # Generate interpretations for all official base personas (the 6 core personas)
+    Persona.active.official.ordered.each do |persona|
       GenerateInterpretationJob.perform_later(id, persona.id)
     end
   end
@@ -49,6 +50,7 @@ class NewsStory < ApplicationRecord
     return full_content if full_content.present? && !full_content.include?("[+")
 
     # Try to scrape full content from source URL
+
     scraped_content = ArticleScraperService.new(source_url).scrape_content
 
     if scraped_content.present?

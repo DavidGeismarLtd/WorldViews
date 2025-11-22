@@ -81,86 +81,36 @@ personas_data.each do |persona_data|
   end
 end
 
-puts "\n📰 Creating demo news stories..."
+puts "\n📰 Fetching real news stories from NewsAPI..."
 
-demo_stories = [
-  {
-    external_id: "demo-ai-startup-500m",
-    headline: "AI Startup Raises $500M to Build 'ChatGPT Killer'",
-    summary: "A new AI startup backed by Silicon Valley heavyweights has raised $500 million to develop what they claim will be a revolutionary language model that surpasses ChatGPT.",
-    full_content: "The startup, founded by former OpenAI researchers, claims their approach will be more efficient and accurate...",
-    source: "TechCrunch",
-    source_url: "https://techcrunch.com/2024/ai-startup-funding",
-    image_url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800",
-    published_at: 2.hours.ago,
-    category: "technology",
-    featured: true,
-    active: true
-  },
-  {
-    external_id: "demo-congress-tech-bill",
-    headline: "Congress Passes Controversial Tech Regulation Bill",
-    summary: "In a rare bipartisan vote, Congress has passed sweeping legislation to regulate big tech companies, including new privacy protections and antitrust measures.",
-    full_content: "The bill, which passed 312-118 in the House, represents the most significant tech regulation in decades...",
-    source: "CNN",
-    source_url: "https://cnn.com/2024/tech-regulation-bill",
-    image_url: "https://images.unsplash.com/photo-1555374018-13a8994ab246?w=800",
-    published_at: 4.hours.ago,
-    category: "politics",
-    featured: true,
-    active: true
-  },
-  {
-    external_id: "demo-tesla-battery",
-    headline: "Tesla Stock Surges 15% on New Battery Technology Announcement",
-    summary: "Tesla shares jumped after the company unveiled a breakthrough in battery technology that could double electric vehicle range while cutting costs in half.",
-    full_content: "CEO Elon Musk announced the new solid-state battery technology at a surprise event...",
-    source: "Bloomberg",
-    source_url: "https://bloomberg.com/2024/tesla-battery-breakthrough",
-    image_url: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800",
-    published_at: 6.hours.ago,
-    category: "business",
-    featured: false,
-    active: true
-  },
-  {
-    external_id: "demo-spacex-mars",
-    headline: "SpaceX Successfully Lands Starship on Mars in Historic Mission",
-    summary: "SpaceX's Starship has successfully landed on Mars, marking humanity's first crewed mission to the Red Planet and a major step toward establishing a permanent settlement.",
-    full_content: "The crew of six astronauts will spend 18 months on Mars conducting research and testing life support systems...",
-    source: "Ars Technica",
-    source_url: "https://arstechnica.com/2024/spacex-mars-landing",
-    image_url: "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=800",
-    published_at: 8.hours.ago,
-    category: "science",
-    featured: true,
-    active: true
-  },
-  {
-    external_id: "demo-climate-summit",
-    headline: "Major Climate Agreement Reached at Global Summit",
-    summary: "Nearly 200 countries have agreed to triple renewable energy capacity by 2030 in what leaders are calling the most ambitious climate accord since Paris.",
-    full_content: "The agreement includes binding commitments to phase out fossil fuel subsidies and invest $1 trillion in clean energy...",
-    source: "New York Times",
-    source_url: "https://nytimes.com/2024/climate-summit-agreement",
-    image_url: "https://images.unsplash.com/photo-1569163139394-de4798aa62b6?w=800",
-    published_at: 10.hours.ago,
-    category: "science",
-    featured: false,
-    active: true
-  }
-]
+# Fetch news from multiple categories using NewsFetcherService
+service = NewsFetcherService.new
 
-demo_stories.each do |story_data|
-  story = NewsStory.find_or_initialize_by(external_id: story_data[:external_id])
-  story.assign_attributes(story_data)
+categories = [ "general", "technology", "business" ]
+all_results = { new: 0, updated: 0, skipped: 0, total: 0 }
 
-  if story.save
-    puts "  ✓ Created/Updated: #{story.headline[0..60]}..."
-  else
-    puts "  ✗ Failed: #{story.errors.full_messages.join(', ')}"
+categories.each do |category|
+  puts "  📂 Fetching #{category} news..."
+
+  begin
+    results = service.fetch_and_store_news(category: category, limit: 5)
+
+    all_results[:new] += results[:new].count
+    all_results[:updated] += results[:updated].count
+    all_results[:skipped] += results[:skipped].count
+    all_results[:total] += results[:total]
+
+    puts "     ✓ #{results[:new].count} new, #{results[:updated].count} updated, #{results[:skipped].count} skipped"
+  rescue ArgumentError => e
+    puts "     ⚠️  #{e.message}"
+    puts "     💡 Set NEWS_API_KEY environment variable to fetch real news"
+    break
+  rescue => e
+    puts "     ✗ Error: #{e.message}"
   end
 end
+
+puts "\n  📊 Total: #{all_results[:new]} new stories, #{all_results[:updated]} updated, #{all_results[:skipped]} skipped"
 
 puts "\n✅ Seeding complete!"
 puts "   - #{Persona.count} personas created"

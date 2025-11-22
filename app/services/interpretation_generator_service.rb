@@ -13,8 +13,8 @@ class InterpretationGeneratorService
 
     Rails.logger.info "🎭 Generating interpretation: #{@persona.name} → #{@news_story.headline[0..50]}..."
 
-    # Check cache first for quick take
-    cache_key = "interpretation/#{@news_story.id}/#{@persona.id}/v1"
+    # Check cache first for quick take (v2 = uses full content)
+    cache_key = "interpretation/#{@news_story.id}/#{@persona.id}/v2"
     cached_result = Rails.cache.read(cache_key)
 
     if cached_result
@@ -22,7 +22,7 @@ class InterpretationGeneratorService
       return create_interpretation_from_cache(cached_result)
     end
 
-    # Generate quick take (using headline + summary)
+    # Generate quick take (using full content if available, otherwise headline + summary)
     quick_result = @llm_client.generate_interpretation(
       news_summary: build_news_summary,
       persona_prompt: @persona.system_prompt
@@ -98,10 +98,8 @@ class InterpretationGeneratorService
   end
 
   def build_news_summary
-    # Combine headline and summary for context (quick take)
-    summary = @news_story.headline.dup
-    summary += ". #{@news_story.summary}" if @news_story.summary.present?
-    summary
+    # Use full content if available, otherwise use headline + summary
+    @news_story.content_for_interpretation
   end
 
   def build_detailed_summary(full_content)

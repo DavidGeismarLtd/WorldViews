@@ -15,7 +15,7 @@ export default class extends Controller {
 
   toggle(event) {
     event.stopPropagation()
-    
+
     if (this.menuTarget.classList.contains("hidden")) {
       this.open()
     } else {
@@ -42,4 +42,3 @@ export default class extends Controller {
     }
   }
 }
-

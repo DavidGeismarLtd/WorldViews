@@ -6,7 +6,19 @@ class NewsStoriesController < ApplicationController
 
   def show
     @news_story = NewsStory.find(params[:id])
-    @personas = Persona.active.ordered
+
+    # Official personas (always shown)
+    @official_personas = Persona.official.active.ordered
+
+    # User's custom personas (if logged in)
+    @custom_personas = if current_user
+      Persona.by_user(current_user).active.ordered
+    else
+      []
+    end
+
+    # Combine all personas for display
+    @personas = @official_personas + @custom_personas
 
     # Get or generate interpretations for all personas
     @interpretations = {}

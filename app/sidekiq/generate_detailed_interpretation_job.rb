@@ -40,10 +40,5 @@ class GenerateDetailedInterpretationJob
     interpretation.update!(detailed_content: detailed_result[:content])
 
     Rails.logger.info "  ✅ Generated detailed analysis (#{detailed_result[:tokens_used]} tokens)"
-  rescue ActiveRecord::RecordNotFound => e
-    Rails.logger.error "  ❌ Interpretation not found: #{e.message}"
-  rescue StandardError => e
-    Rails.logger.error "  ❌ Failed to generate detailed interpretation: #{e.message}"
-    raise
   end
 end

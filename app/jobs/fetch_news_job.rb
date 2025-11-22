@@ -31,13 +31,39 @@ class FetchNewsJob < ApplicationJob
     Rails.logger.info "   📊 #{updated_count} updated stories"
     Rails.logger.info "   📊 #{skipped_count} skipped (duplicates)"
 
-    # Optionally trigger interpretation generation for new stories only
+    # Generate interpretations for new stories only (synchronously for the 6 base personas)
     # (Don't regenerate for updated or skipped stories)
     if results[:new].present?
+      Rails.logger.info "   🤖 Generating interpretations for #{new_count} new stories..."
+
+      # Get all official base personas (the 6 core personas)
+      official_personas = Persona.active.official.ordered.to_a
+
+      generated_count = 0
+      failed_count = 0
+
       results[:new].each do |story|
-        GenerateInterpretationsJob.perform_later(story.id)
+        official_personas.each do |persona|
+          # Skip if interpretation already exists
+          next if Interpretation.exists?(news_story: story, persona: persona)
+
+          begin
+            # Generate interpretation synchronously
+            InterpretationGeneratorService.new(
+              news_story: story,
+              persona: persona
+            ).generate!
+            generated_count += 1
+          rescue => e
+            # Log error but continue with other interpretations
+            Rails.logger.error "   ❌ Failed to generate interpretation for #{persona.name} on story #{story.id}: #{e.message}"
+            failed_count += 1
+          end
+        end
       end
-      Rails.logger.info "   🤖 Queued interpretation generation for #{new_count} new stories"
+
+      Rails.logger.info "   ✅ Generated #{generated_count} interpretations (#{official_personas.count} personas × #{new_count} stories)"
+      Rails.logger.warn "   ⚠️  #{failed_count} interpretations failed" if failed_count > 0
     end
 
     results

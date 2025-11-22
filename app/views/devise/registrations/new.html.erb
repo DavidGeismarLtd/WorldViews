@@ -1,0 +1,171 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-indigo-50/30 py-12 relative overflow-hidden">
+  <!-- Decorative background elements -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-20 left-10 text-6xl opacity-5 animate-float">🌍</div>
+    <div class="absolute top-40 right-20 text-5xl opacity-5 animate-float-delayed">📰</div>
+    <div class="absolute bottom-40 left-20 text-5xl opacity-5 animate-float">🎭</div>
+    <div class="absolute bottom-20 right-10 text-6xl opacity-5 animate-float-delayed">✨</div>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="text-6xl mb-4 animate-bounce-slow">🌍✨</div>
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">Join Worldviews</h1>
+      <p class="text-lg text-gray-600 mb-4">
+        Create your own personas and see news through any lens
+      </p>
+      <div class="flex items-center justify-center gap-4 text-sm text-gray-500 flex-wrap">
+        <span class="flex items-center gap-1">
+          <span class="text-base">🎭</span>
+          <span>Unlimited personas</span>
+        </span>
+        <span class="flex items-center gap-1">
+          <span class="text-base">🆓</span>
+          <span>Free forever</span>
+        </span>
+        <span class="flex items-center gap-1">
+          <span class="text-base">⚡</span>
+          <span>30 seconds</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-lg p-6 mb-6 text-white">
+      <h3 class="font-bold text-lg mb-3 text-center">What You'll Get</h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="flex items-start gap-2">
+          <span class="text-xl">✨</span>
+          <span>Create unlimited personas</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-xl">🎭</span>
+          <span>See news through any lens</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-xl">🌍</span>
+          <span>Share your perspectives</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-xl">🚀</span>
+          <span>No ads, ever</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl shadow-xl p-10 sm:p-12 border-t-4 border-purple-600 backdrop-blur-sm">
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { data: { controller: "signup-form" } }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <div class="mb-8">
+          <%= f.label :email, "Email", class: "block text-base font-semibold text-gray-700 mb-3" %>
+          <div class="relative">
+            <span class="absolute left-4 top-4 text-xl text-gray-400">📧</span>
+            <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300",
+              placeholder: "you@example.com" %>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <%= f.label :password, "Password", class: "block text-base font-semibold text-gray-700 mb-3" %>
+          <div class="relative">
+            <span class="absolute left-4 top-4 text-xl text-gray-400">🔒</span>
+            <%= f.password_field :password, autocomplete: "new-password",
+              class: "w-full pl-12 pr-14 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300",
+              placeholder: "••••••••",
+              data: {
+                signup_form_target: "password",
+                action: "input->signup-form#checkPasswordStrength"
+              } %>
+            <button type="button"
+              class="absolute right-4 top-4 text-xl text-gray-400 hover:text-gray-600 transition-colors"
+              data-action="click->signup-form#togglePassword"
+              data-signup-form-target="toggleButton">
+              <span data-signup-form-target="eyeIcon">👁️</span>
+            </button>
+          </div>
+          <!-- Password strength indicator -->
+          <div class="mt-3">
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full transition-all duration-300 rounded-full"
+                data-signup-form-target="strengthBar"
+                style="width: 0%"></div>
+            </div>
+            <p class="mt-2 text-sm text-gray-500" data-signup-form-target="strengthText">
+              <% if @minimum_password_length %>
+                <%= @minimum_password_length %> characters minimum
+              <% end %>
+            </p>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <%= f.label :password_confirmation, "Confirm Password", class: "block text-base font-semibold text-gray-700 mb-3" %>
+          <div class="relative">
+            <span class="absolute left-4 top-4 text-xl text-gray-400">🔒</span>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password",
+              class: "w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300",
+              placeholder: "••••••••" %>
+          </div>
+        </div>
+
+        <!-- Trust signals -->
+        <div class="mb-8 flex items-center justify-center gap-6 text-sm text-gray-500">
+          <span class="flex items-center gap-2">
+            <span class="text-lg">🔒</span>
+            <span>Secure signup</span>
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="text-lg">🛡️</span>
+            <span>Privacy protected</span>
+          </span>
+        </div>
+
+        <div class="mb-6">
+          <%= f.submit "Create My Account ✨", class: "w-full px-8 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200 cursor-pointer hover:from-purple-700 hover:to-indigo-700" %>
+        </div>
+      <% end %>
+
+      <div class="text-center pt-4 border-t border-gray-200">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+
+    <!-- Additional trust signal -->
+    <p class="text-center text-xs text-gray-500 mt-4">
+      🔐 We'll never share your email or spam you
+    </p>
+  </div>
+</div>
+
+<style>
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes float-delayed {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+  }
+
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float-delayed 8s ease-in-out infinite;
+  }
+
+  .animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
+  }
+</style>
