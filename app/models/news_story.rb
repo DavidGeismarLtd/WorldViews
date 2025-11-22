@@ -3,6 +3,9 @@ class NewsStory < ApplicationRecord
   has_many :interpretations, dependent: :destroy
   has_many :personas, through: :interpretations
 
+  # Callbacks
+  after_commit :update_featured_stories, on: [ :create, :update ]
+
   # Validations
   validates :external_id, presence: true, uniqueness: true
   validates :headline, presence: true
@@ -17,6 +20,14 @@ class NewsStory < ApplicationRecord
   # Class methods
   def self.latest(limit = 10)
     active.recent.limit(limit)
+  end
+
+  def self.last_fetch_time
+    maximum(:published_at) || 7.days.ago
+  end
+
+  def self.needs_sync?
+    last_fetch_time < 6.hours.ago
   end
 
   # Instance methods
@@ -58,5 +69,22 @@ class NewsStory < ApplicationRecord
       text += ". #{summary}" if summary.present?
       text
     end
+  end
+
+  private
+
+  # Automatically mark the 3 newest stories as featured
+  def update_featured_stories
+    # Get the 3 most recent active stories by published_at
+    top_3_ids = NewsStory.active
+                         .order(published_at: :desc)
+                         .limit(3)
+                         .pluck(:id)
+
+    # Unfeature all stories first
+    NewsStory.where(featured: true).where.not(id: top_3_ids).update_all(featured: false)
+
+    # Feature the top 3
+    NewsStory.where(id: top_3_ids).update_all(featured: true)
   end
 end

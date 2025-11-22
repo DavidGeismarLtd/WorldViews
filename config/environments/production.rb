@@ -47,7 +47,14 @@ Rails.application.configure do
   config.active_support.report_deprecations = false
 
   # Use Redis for caching (we have Redis for Sidekiq, so use it for cache too)
-  config.cache_store = :redis_cache_store, { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0") }
+  redis_cache_config = { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0") }
+
+  # For Heroku Redis with SSL (rediss://), disable SSL verification
+  if ENV["REDIS_URL"]&.start_with?("rediss://")
+    redis_cache_config[:ssl_params] = { verify_mode: OpenSSL::SSL::VERIFY_NONE }
+  end
+
+  config.cache_store = :redis_cache_store, redis_cache_config
 
   # Use Sidekiq for background jobs (we have Sidekiq + Redis configured)
   config.active_job.queue_adapter = :sidekiq

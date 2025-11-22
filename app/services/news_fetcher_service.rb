@@ -14,25 +14,88 @@ class NewsFetcherService
 
     if articles.empty?
       Rails.logger.warn "⚠️  No articles fetched from NewsAPI"
-      return []
+      return { new: [], updated: [], skipped: [], total: 0 }
     end
 
-    created_stories = []
+    process_and_store_articles(articles)
+  end
+
+  # Fetch news since last successful fetch
+  def fetch_latest_news(categories: [ "general", "technology", "business" ], limit_per_category: 20)
+    last_fetch = NewsStory.maximum(:published_at) || 7.days.ago
+    Rails.logger.info "📰 Fetching news since #{last_fetch}"
+
+    all_results = { new: [], updated: [], skipped: [], total: 0 }
+
+    categories.each do |category|
+      Rails.logger.info "  📂 Category: #{category}"
+      articles = fetch_top_headlines(category: category, limit: limit_per_category)
+
+      # Filter to only articles newer than our last fetch
+      new_articles = articles.select do |article|
+        published_at = Time.parse(article[:published_at]) rescue nil
+        published_at && published_at > last_fetch
+      end
+
+      Rails.logger.info "  📊 Found #{new_articles.count} new articles (out of #{articles.count} total)"
+
+      results = process_and_store_articles(new_articles)
+
+      # Merge results
+      all_results[:new] += results[:new]
+      all_results[:updated] += results[:updated]
+      all_results[:skipped] += results[:skipped]
+      all_results[:total] += results[:total]
+    end
+
+    Rails.logger.info "✅ Fetch complete: #{all_results[:new].count} new, #{all_results[:updated].count} updated, #{all_results[:skipped].count} skipped"
+    all_results
+  end
+
+  private
+
+  def process_and_store_articles(articles)
+    new_stories = []
+    updated_stories = []
+    skipped_stories = []
 
     articles.each do |article_data|
-      story = create_or_update_story(article_data)
-      created_stories << story if story
+      story = NewsStory.find_or_initialize_by(external_id: article_data[:external_id])
+
+      if story.new_record?
+        story.assign_attributes(article_data)
+        if story.save
+          Rails.logger.info "  ✓ NEW: #{story.headline[0..60]}..."
+          new_stories << story
+        else
+          Rails.logger.error "  ✗ FAILED: #{story.errors.full_messages.join(', ')}"
+        end
+      elsif story.headline != article_data[:headline] || story.summary != article_data[:summary]
+        story.assign_attributes(article_data)
+        if story.save
+          Rails.logger.info "  ↻ UPDATED: #{story.headline[0..60]}..."
+          updated_stories << story
+        end
+      else
+        Rails.logger.debug "  ⊙ SKIPPED: #{story.headline[0..60]}..."
+        skipped_stories << story
+      end
     end
 
-    Rails.logger.info "✅ Created/updated #{created_stories.count} news stories"
-    created_stories
+    {
+      new: new_stories,
+      updated: updated_stories,
+      skipped: skipped_stories,
+      total: articles.count
+    }
   end
 
   def fetch_top_headlines(category: "general", limit: 10)
-    # Use mock data if API key is not set
+    # Require API key - no mock data fallback in production
     if @api_key.blank?
-      Rails.logger.info "📝 Using mock NewsAPI data (no API key)"
-      return parse_response(mock_response(category, limit))
+      error_msg = "❌ NEWS_API_KEY is not set! Cannot fetch news."
+      Rails.logger.error error_msg
+      raise ArgumentError, error_msg
     end
 
     response = self.class.get("/top-headlines", query: {
@@ -48,9 +111,32 @@ class NewsFetcherService
       Rails.logger.error "❌ NewsAPI error: #{response.code} - #{response.message}"
       []
     end
-  rescue StandardError => e
-    Rails.logger.error "❌ NewsAPI exception: #{e.message}"
-    []
+  end
+
+  # Fetch news since a specific date (for incremental updates)
+  def fetch_since(from_date:, category: "general", limit: 100)
+    if @api_key.blank?
+      error_msg = "❌ NEWS_API_KEY is not set! Cannot fetch news."
+      Rails.logger.error error_msg
+      raise ArgumentError, error_msg
+    end
+
+    Rails.logger.info "📰 Fetching news since #{from_date} (category: #{category})"
+
+    response = self.class.get("/everything", query: {
+      apiKey: @api_key,
+      from: from_date.iso8601,
+      language: "en",
+      sortBy: "publishedAt",
+      pageSize: limit
+    })
+
+    if response.success?
+      parse_response(response)
+    else
+      Rails.logger.error "❌ NewsAPI error: #{response.code} - #{response.message}"
+      []
+    end
   end
 
   private
@@ -212,26 +298,6 @@ class NewsFetcherService
       "science"
     else
       "general"
-    end
-  end
-
-  def create_or_update_story(article_data)
-    story = NewsStory.find_or_initialize_by(external_id: article_data[:external_id])
-
-    # Only update if it's a new story or if content has changed
-    if story.new_record? || story.headline != article_data[:headline]
-      story.assign_attributes(article_data)
-
-      if story.save
-        Rails.logger.info "  ✓ Saved: #{story.headline[0..60]}..."
-        story
-      else
-        Rails.logger.error "  ✗ Failed to save: #{story.errors.full_messages.join(', ')}"
-        nil
-      end
-    else
-      Rails.logger.info "  ⊙ Skipped (unchanged): #{story.headline[0..60]}..."
-      story
     end
   end
 end
