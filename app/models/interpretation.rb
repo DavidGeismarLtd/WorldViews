@@ -1,0 +1,42 @@
+class Interpretation < ApplicationRecord
+  # Associations
+  belongs_to :news_story
+  belongs_to :persona
+
+  # Validations
+  validates :content, presence: true
+  validates :news_story_id, uniqueness: { scope: :persona_id }
+
+  # Scopes
+  scope :cached, -> { where(cached: true) }
+  scope :recent, -> { order(created_at: :desc) }
+
+  # Callbacks
+  after_commit :broadcast_detailed_content_update, if: :saved_change_to_detailed_content?
+
+  # Instance methods
+  def cache_key_name
+    "interpretation/#{news_story_id}/#{persona_id}/v1"
+  end
+
+  def mark_as_cached!
+    update(cached: true)
+  end
+
+  private
+
+  def broadcast_detailed_content_update
+    # Only broadcast if detailed_content was just added (not nil -> has content)
+    return unless detailed_content.present?
+
+    Rails.logger.info "📡 Broadcasting detailed content update for interpretation ##{id}"
+
+    # Broadcast the update via Turbo Stream
+    broadcast_replace_to(
+      "interpretation_#{id}",
+      target: "detailed_analysis_#{id}",
+      partial: "interpretations/detailed_analysis",
+      locals: { interpretation: self, persona: persona }
+    )
+  end
+end

@@ -1,0 +1,14 @@
+<div class="detailed-analysis">
+  <% if interpretation.detailed_content.present? %>
+    <div style="--persona-color: <%= persona.color_primary %>;">
+      <%= sanitize(interpretation.detailed_content, tags: %w[h3 h4 p ul li strong em blockquote], attributes: %w[]) %>
+    </div>
+  <% else %>
+    <div class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style="border-color: <%= persona.color_primary %>;"></div>
+        <p class="text-gray-600 text-lg">The <%= persona.name %> is thinking hard about a full analysis...</p>
+      </div>
+    </div>
+  <% end %>
+</div>
