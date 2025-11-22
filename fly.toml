@@ -1,0 +1,37 @@
+# fly.toml app configuration file generated for worldviews
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = 'worldviews'
+primary_region = 'iad'
+
+[build]
+  # Use our Dockerfile instead of buildpacks
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = './bin/rails db:prepare'
+
+[env]
+  RAILS_ENV = 'production'
+  RAILS_SERVE_STATIC_FILES = 'true'
+  RAILS_LOG_TO_STDOUT = 'true'
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+  [http_service.concurrency]
+    type = 'connections'
+    hard_limit = 1000
+    soft_limit = 1000
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
