@@ -1,5 +1,11 @@
 <% content_for :title, "#{@news_story.headline} - Worldviews" %>
 
+<!-- Subscribe to Turbo Stream updates for all personas on this page -->
+<% @personas.each do |persona| %>
+  <%= turbo_stream_from "persona_#{persona.id}" %>
+  <%= turbo_stream_from "news_story_#{@news_story.id}_persona_#{persona.id}" %>
+<% end %>
+
 <div class="max-w-4xl mx-auto">
   <!-- Back Button -->
   <div class="mb-6">
@@ -57,34 +63,34 @@
     <div data-controller="persona-carousel" class="relative">
       <!-- Persona Tabs -->
       <div class="flex overflow-x-auto space-x-2 mb-6 pb-2 scrollbar-hide">
-        <% if @official_personas.any? %>
-          <div class="flex-shrink-0 text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-2 flex items-center">
-            Official
-          </div>
-        <% end %>
-        <% @official_personas.each_with_index do |persona, index| %>
-          <button
-            data-persona-carousel-target="tab"
-            data-action="click->persona-carousel#selectPersona"
-            data-index="<%= index %>"
-            class="flex-shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200 <%= index == 0 ? 'text-white' : 'bg-white text-gray-700 hover:bg-gray-100' %>"
-            style="<%= index == 0 ? "background-color: #{persona.color_primary};" : '' %>"
-          >
-            <%= persona.name %>
-          </button>
-        <% end %>
-
         <% if @custom_personas.any? %>
-          <div class="flex-shrink-0 text-xs font-semibold text-purple-600 uppercase tracking-wide px-2 py-2 flex items-center border-l-2 border-purple-200 ml-2 pl-4">
+          <div class="flex-shrink-0 text-xs font-semibold text-purple-600 uppercase tracking-wide px-2 py-2 flex items-center">
             ✨ Your Personas
           </div>
-          <% @custom_personas.each_with_index do |persona, custom_index| %>
-            <% index = @official_personas.length + custom_index %>
+          <% @custom_personas.each_with_index do |persona, index| %>
             <button
               data-persona-carousel-target="tab"
               data-action="click->persona-carousel#selectPersona"
               data-index="<%= index %>"
-              class="flex-shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200 bg-white text-gray-700 hover:bg-gray-100 border-2 border-purple-200"
+              class="flex-shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200 <%= index == 0 ? 'text-white' : 'bg-white text-gray-700 hover:bg-gray-100' %> border-2 border-purple-200"
+              style="<%= index == 0 ? "background-color: #{persona.color_primary};" : '' %>"
+            >
+              <%= persona.name %>
+            </button>
+          <% end %>
+        <% end %>
+
+        <% if @official_personas.any? %>
+          <div class="flex-shrink-0 text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-2 flex items-center <%= @custom_personas.any? ? 'border-l-2 border-gray-200 ml-2 pl-4' : '' %>">
+            Official
+          </div>
+          <% @official_personas.each_with_index do |persona, official_index| %>
+            <% index = @custom_personas.length + official_index %>
+            <button
+              data-persona-carousel-target="tab"
+              data-action="click->persona-carousel#selectPersona"
+              data-index="<%= index %>"
+              class="flex-shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200 bg-white text-gray-700 hover:bg-gray-100"
             >
               <%= persona.name %>
             </button>
@@ -105,15 +111,9 @@
               <!-- Persona Header -->
               <div class="p-6" style="background: linear-gradient(135deg, <%= persona.color_primary %>20 0%, <%= persona.color_secondary || persona.color_primary %>10 100%);">
                 <%= link_to persona_path(persona), class: "flex items-center space-x-4 group" do %>
-                  <% if persona.avatar_url.present? %>
-                    <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
-                      <%= image_tag persona.avatar_url, alt: persona.name, class: "w-full h-full object-cover" %>
-                    </div>
-                  <% else %>
-                    <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white" style="background-color: <%= persona.color_primary %>;">
-                      <%= persona.name[0] %>
-                    </div>
-                  <% end %>
+                  <div id="persona_avatar_<%= persona.id %>">
+                    <%= render "personas/avatar", persona: persona %>
+                  </div>
                   <div>
                     <h3 class="text-2xl font-bold text-gray-900 group-hover:underline"><%= persona.name %></h3>
                     <p class="text-gray-600 italic">"<%= persona.description %>"</p>
@@ -123,37 +123,13 @@
 
               <!-- Interpretation Content -->
               <div class="p-8">
-                <% if interpretation %>
-                  <div class="relative">
-                    <!-- Speech Bubble -->
-                    <div class="bg-gray-50 rounded-2xl p-6 relative">
-                      <div class="absolute -top-3 left-8 w-6 h-6 bg-gray-50 transform rotate-45"></div>
-                      <p class="text-lg text-gray-900 leading-relaxed relative z-10">
-                        <%= interpretation.content %>
-                      </p>
-                    </div>
-
-                    <!-- Metadata & Actions -->
-                    <div class="mt-4 flex items-center justify-between">
-                      <div class="text-xs text-gray-500">
-                        <span>Generated by <%= interpretation.llm_model %></span>
-                        <span class="mx-2">•</span>
-                        <span><%= interpretation.generation_time_ms %>ms • <%= interpretation.llm_tokens_used %> tokens</span>
-                      </div>
-                      <%= link_to interpretation_path(interpretation), class: "inline-flex items-center space-x-1 text-sm font-medium hover:underline", style: "color: #{persona.color_primary};" do %>
-                        <span>📝 Read Full Opinion</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      <% end %>
-                    </div>
-                  </div>
-                <% else %>
-                  <div class="text-center py-8">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style="border-color: <%= persona.color_primary %>;"></div>
-                    <p class="text-gray-600">Generating <%= persona.name %>'s take...</p>
-                  </div>
-                <% end %>
+                <div id="interpretation_content_<%= @news_story.id %>_<%= persona.id %>">
+                  <% if interpretation %>
+                    <%= render "interpretations/content", interpretation: interpretation, persona: persona %>
+                  <% else %>
+                    <%= render "interpretations/loading", persona: persona %>
+                  <% end %>
+                </div>
               </div>
             </div>
           </div>

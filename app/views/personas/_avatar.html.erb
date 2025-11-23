@@ -1,0 +1,10 @@
+<% if persona.avatar_url.present? %>
+  <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
+    <%= image_tag persona.avatar_url, alt: persona.name, class: "w-full h-full object-cover" %>
+  </div>
+<% else %>
+  <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white" style="background-color: <%= persona.color_primary %>;">
+    <%= persona.name[0] %>
+  </div>
+<% end %>
+

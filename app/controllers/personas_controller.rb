@@ -27,7 +27,15 @@ class PersonasController < ApplicationController
     @persona = current_user.personas.build(persona_params)
     @persona.official = false # Ensure user personas are never official
 
+    # Handle avatar based on avatar_type
+    handle_avatar_selection(@persona)
+
     if @persona.save
+      # Generate avatar in background if AI option selected
+      if params[:avatar_type] == "ai" && @persona.avatar_url.blank?
+        GeneratePersonaAvatarJob.perform_async(@persona.id)
+      end
+
       redirect_to persona_path(@persona), notice: "🎉 Persona created successfully! It will now interpret news stories."
     else
       render :new, status: :unprocessable_entity
@@ -39,7 +47,15 @@ class PersonasController < ApplicationController
   end
 
   def update
+    # Handle avatar based on avatar_type
+    handle_avatar_selection(@persona)
+
     if @persona.update(persona_params)
+      # Generate avatar in background if AI option selected and no avatar exists
+      if params[:avatar_type] == "ai" && @persona.avatar_url.blank?
+        GeneratePersonaAvatarJob.perform_async(@persona.id)
+      end
+
       redirect_to persona_path(@persona), notice: "Persona updated successfully!"
     else
       render :edit, status: :unprocessable_entity
@@ -74,5 +90,25 @@ class PersonasController < ApplicationController
       :visibility,
       :active
     )
+  end
+
+  def handle_avatar_selection(persona)
+    avatar_type = params[:avatar_type]
+
+    case avatar_type
+    when "letter"
+      # Clear avatar_url to use first letter fallback
+      persona.avatar_url = nil
+    when "ai"
+      # Clear avatar_url to trigger AI generation
+      persona.avatar_url = nil
+    when "upload"
+      # File upload would be handled here
+      # For now, avatar_url from params will be used (base64 or cloud URL)
+      # In production, you'd upload to S3/Cloudinary first
+    when "link"
+      # avatar_url from params will be used directly
+      # No additional processing needed
+    end
   end
 end

@@ -1,0 +1,246 @@
+<%= form_with model: persona, url: form_url, method: form_method, local: true do |f| %>
+  <!-- Error Messages -->
+  <% if persona.errors.any? %>
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+      <h3 class="font-bold mb-2"><%= pluralize(persona.errors.count, "error") %> prevented this persona from being saved:</h3>
+      <ul class="list-disc list-inside">
+        <% persona.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Name -->
+  <div class="mb-6">
+    <%= f.label :name, "Persona Name", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+    <%= f.text_field :name,
+      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
+      placeholder: "e.g., The Tech Optimist, The Skeptical Scientist",
+      data: { action: "input->avatar-selector#updatePreview" } %>
+    <p class="mt-1 text-sm text-gray-500">Give your persona a memorable name</p>
+  </div>
+
+  <!-- Description -->
+  <div class="mb-6">
+    <%= f.label :description, "Short Description", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+    <%= f.text_field :description,
+      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
+      placeholder: "e.g., Everything through a lens of innovation" %>
+    <p class="mt-1 text-sm text-gray-500">A one-line tagline that captures the essence</p>
+  </div>
+
+  <!-- System Prompt -->
+  <div class="mb-6">
+    <%= f.label :system_prompt, "Worldview Instructions", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+    <%= f.text_area :system_prompt,
+      rows: 8,
+      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm",
+      placeholder: "You are a [describe the persona]. You view all events through the lens of [perspective]. You are [personality traits]. You see [what they focus on] as the root of all problems. You advocate for [their solutions]. Respond in 2-3 sentences with [tone] language." %>
+    <p class="mt-1 text-sm text-gray-500">
+      Detailed instructions that define how this persona thinks and responds. This is what the AI will use to generate interpretations.
+    </p>
+  </div>
+
+  <!-- Avatar Selection -->
+  <div class="mb-6" data-controller="avatar-selector">
+    <%= f.label :avatar, "Avatar", class: "block text-sm font-semibold text-gray-700 mb-3" %>
+
+    <!-- Hidden fields for avatar data -->
+    <%= f.hidden_field :avatar_url, data: { avatar_selector_target: "avatarUrlField" } %>
+    <%= hidden_field_tag :avatar_type, persona.new_record? ? "ai" : "link", data: { avatar_selector_target: "avatarTypeField" } %>
+
+    <!-- Avatar Preview -->
+    <div class="mb-4 flex justify-center">
+      <div class="w-32 h-32 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100" data-avatar-selector-target="preview">
+        <% if persona.avatar_url.present? %>
+          <img src="<%= persona.avatar_url %>" alt="Avatar preview" class="w-full h-full object-cover">
+        <% else %>
+          <div class="w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white">
+            <div class="text-center">
+              <div class="text-4xl mb-1">🎨</div>
+              <div class="text-xs font-semibold">AI Generated</div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Avatar Options -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <!-- Upload Image -->
+      <button type="button"
+        data-avatar-selector-target="option"
+        data-avatar-option="upload"
+        data-action="click->avatar-selector#selectOption"
+        class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-all text-center bg-white">
+        <div class="text-3xl mb-2">📤</div>
+        <div class="text-sm font-semibold text-gray-700">Upload</div>
+        <div class="text-xs text-gray-500">Image file</div>
+      </button>
+
+      <!-- Link to Image -->
+      <button type="button"
+        data-avatar-selector-target="option"
+        data-avatar-option="link"
+        data-action="click->avatar-selector#selectOption"
+        class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-all text-center bg-white">
+        <div class="text-3xl mb-2">🔗</div>
+        <div class="text-sm font-semibold text-gray-700">Link</div>
+        <div class="text-xs text-gray-500">Image URL</div>
+      </button>
+
+      <!-- First Letter -->
+      <button type="button"
+        data-avatar-selector-target="option"
+        data-avatar-option="letter"
+        data-action="click->avatar-selector#selectOption"
+        class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-all text-center bg-white">
+        <div class="text-3xl mb-2">🔤</div>
+        <div class="text-sm font-semibold text-gray-700">Letter</div>
+        <div class="text-xs text-gray-500">First initial</div>
+      </button>
+
+      <!-- AI Generated -->
+      <button type="button"
+        data-avatar-selector-target="option"
+        data-avatar-option="ai"
+        data-action="click->avatar-selector#selectOption"
+        class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-all text-center bg-white ring-2 ring-purple-500 bg-purple-50">
+        <div class="text-3xl mb-2">🎨</div>
+        <div class="text-sm font-semibold text-gray-700">AI Generate</div>
+        <div class="text-xs text-gray-500">DALL-E 3</div>
+      </button>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="hidden" data-avatar-selector-target="uploadSection">
+      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+        <input type="file"
+          accept="image/*"
+          data-avatar-selector-target="fileInput"
+          data-action="change->avatar-selector#handleFileSelect"
+          class="hidden"
+          id="avatar-file-input">
+        <label for="avatar-file-input" class="cursor-pointer">
+          <div class="text-4xl mb-2">📁</div>
+          <div class="text-sm font-semibold text-gray-700 mb-1">Click to upload image</div>
+          <div class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</div>
+        </label>
+      </div>
+      <p class="mt-2 text-xs text-gray-500">⚠️ Note: File upload requires cloud storage setup (S3, Cloudinary, etc.)</p>
+    </div>
+
+    <!-- Link Section -->
+    <div class="hidden" data-avatar-selector-target="linkSection">
+      <input type="url"
+        placeholder="https://example.com/avatar.png"
+        data-action="input->avatar-selector#handleLinkInput"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+      <p class="mt-2 text-xs text-gray-500">Enter a direct link to an image</p>
+    </div>
+
+    <!-- Letter Section -->
+    <div class="hidden" data-avatar-selector-target="letterSection">
+      <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <div class="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-white text-2xl font-bold mr-4">
+            <%= persona.name.present? ? persona.name[0].upcase : "?" %>
+          </div>
+          <div>
+            <div class="text-sm font-semibold text-gray-700">First letter avatar</div>
+            <div class="text-xs text-gray-500">Uses the first letter of the persona name</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Section -->
+    <div class="hidden" data-avatar-selector-target="aiSection">
+      <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
+        <div class="flex items-start">
+          <div class="text-3xl mr-3">🤖</div>
+          <div>
+            <div class="text-sm font-semibold text-gray-700 mb-1">AI-Generated Avatar</div>
+            <div class="text-xs text-gray-600 mb-2">
+              DALL-E 3 will create a unique avatar based on your persona's worldview and characteristics.
+            </div>
+            <div class="text-xs text-purple-600 font-medium">
+              ✨ Generated automatically after saving (~30 seconds)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colors -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div>
+      <%= f.label :color_primary, "Primary Color", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+      <div class="flex items-center space-x-2">
+        <%= f.color_field :color_primary,
+          value: persona.color_primary || "#8B5CF6",
+          class: "h-12 w-20 border border-gray-300 rounded cursor-pointer" %>
+        <%= f.text_field :color_primary,
+          value: persona.color_primary || "#8B5CF6",
+          class: "flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
+          placeholder: "#8B5CF6" %>
+      </div>
+    </div>
+    <div>
+      <%= f.label :color_secondary, "Secondary Color", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+      <div class="flex items-center space-x-2">
+        <%= f.color_field :color_secondary,
+          value: persona.color_secondary || "#6D28D9",
+          class: "h-12 w-20 border border-gray-300 rounded cursor-pointer" %>
+        <%= f.text_field :color_secondary,
+          value: persona.color_secondary || "#6D28D9",
+          class: "flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
+          placeholder: "#6D28D9" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visibility -->
+  <div class="mb-6">
+    <%= f.label :visibility, "Visibility", class: "block text-sm font-semibold text-gray-700 mb-2" %>
+    <div class="space-y-2">
+      <label class="flex items-center">
+        <%= f.radio_button :visibility, "public", class: "mr-2" %>
+        <span class="text-gray-700"><strong>Public</strong> - Anyone can see and use this persona</span>
+      </label>
+      <label class="flex items-center">
+        <%= f.radio_button :visibility, "unlisted", class: "mr-2" %>
+        <span class="text-gray-700"><strong>Unlisted</strong> - Only people with the link can see it</span>
+      </label>
+      <label class="flex items-center">
+        <%= f.radio_button :visibility, "private", class: "mr-2" %>
+        <span class="text-gray-700"><strong>Private</strong> - Only you can see it</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Active Toggle (only show for existing personas) -->
+  <% unless persona.new_record? %>
+    <div class="mb-6">
+      <label class="flex items-center">
+        <%= f.check_box :active, class: "mr-2" %>
+        <span class="text-gray-700"><strong>Active</strong> - Generate interpretations for new stories</span>
+      </label>
+    </div>
+  <% end %>
+
+  <!-- Submit Buttons -->
+  <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+    <div class="flex items-center space-x-4">
+      <%= link_to cancel_text, cancel_path, class: "text-gray-600 hover:text-gray-900 font-medium" %>
+      <% if show_delete %>
+        <%= button_to "Delete Persona", persona_path(persona), method: :delete,
+          data: { confirm: "Are you sure? This will delete all interpretations by this persona." },
+          class: "text-red-600 hover:text-red-700 font-medium" %>
+      <% end %>
+    </div>
+    <%= f.submit submit_text, class: "px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity cursor-pointer" %>
+  </div>
+<% end %>

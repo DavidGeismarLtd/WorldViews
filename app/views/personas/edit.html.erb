@@ -10,121 +10,14 @@
 
     <!-- Form -->
     <div class="bg-white rounded-2xl shadow-lg p-8">
-      <%= form_with model: @persona, url: persona_path(@persona), method: :patch, local: true do |f| %>
-        <!-- Error Messages -->
-        <% if @persona.errors.any? %>
-          <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <h3 class="font-bold mb-2"><%= pluralize(@persona.errors.count, "error") %> prevented this persona from being saved:</h3>
-            <ul class="list-disc list-inside">
-              <% @persona.errors.full_messages.each do |message| %>
-                <li><%= message %></li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
-
-        <!-- Name -->
-        <div class="mb-6">
-          <%= f.label :name, "Persona Name", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-          <%= f.text_field :name, 
-            class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
-            placeholder: "e.g., The Tech Optimist, The Skeptical Scientist" %>
-          <p class="mt-1 text-sm text-gray-500">Give your persona a memorable name</p>
-        </div>
-
-        <!-- Description -->
-        <div class="mb-6">
-          <%= f.label :description, "Short Description", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-          <%= f.text_field :description,
-            class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
-            placeholder: "e.g., Everything through a lens of innovation" %>
-          <p class="mt-1 text-sm text-gray-500">A one-line tagline that captures the essence</p>
-        </div>
-
-        <!-- System Prompt -->
-        <div class="mb-6">
-          <%= f.label :system_prompt, "Worldview Instructions", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-          <%= f.text_area :system_prompt,
-            rows: 8,
-            class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm",
-            placeholder: "You are a [describe the persona]. You view all events through the lens of [perspective]..." %>
-          <p class="mt-1 text-sm text-gray-500">
-            Detailed instructions that define how this persona thinks and responds.
-          </p>
-        </div>
-
-        <!-- Colors -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <%= f.label :color_primary, "Primary Color", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-            <div class="flex items-center space-x-2">
-              <%= f.color_field :color_primary,
-                class: "h-12 w-20 border border-gray-300 rounded cursor-pointer" %>
-              <%= f.text_field :color_primary,
-                class: "flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
-                placeholder: "#8B5CF6" %>
-            </div>
-          </div>
-          <div>
-            <%= f.label :color_secondary, "Secondary Color", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-            <div class="flex items-center space-x-2">
-              <%= f.color_field :color_secondary,
-                class: "h-12 w-20 border border-gray-300 rounded cursor-pointer" %>
-              <%= f.text_field :color_secondary,
-                class: "flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
-                placeholder: "#6D28D9" %>
-            </div>
-          </div>
-        </div>
-
-        <!-- Avatar URL (optional) -->
-        <div class="mb-6">
-          <%= f.label :avatar_url, "Avatar Image URL (optional)", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-          <%= f.text_field :avatar_url,
-            class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent",
-            placeholder: "https://example.com/avatar.png" %>
-          <p class="mt-1 text-sm text-gray-500">Leave blank to use the first letter of the name</p>
-        </div>
-
-        <!-- Visibility -->
-        <div class="mb-6">
-          <%= f.label :visibility, "Visibility", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-          <div class="space-y-2">
-            <label class="flex items-center">
-              <%= f.radio_button :visibility, "public", class: "mr-2" %>
-              <span class="text-gray-700"><strong>Public</strong> - Anyone can see and use this persona</span>
-            </label>
-            <label class="flex items-center">
-              <%= f.radio_button :visibility, "unlisted", class: "mr-2" %>
-              <span class="text-gray-700"><strong>Unlisted</strong> - Only people with the link can see it</span>
-            </label>
-            <label class="flex items-center">
-              <%= f.radio_button :visibility, "private", class: "mr-2" %>
-              <span class="text-gray-700"><strong>Private</strong> - Only you can see it</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Active Toggle -->
-        <div class="mb-6">
-          <label class="flex items-center">
-            <%= f.check_box :active, class: "mr-2" %>
-            <span class="text-gray-700"><strong>Active</strong> - Generate interpretations for new stories</span>
-          </label>
-        </div>
-
-        <!-- Submit Buttons -->
-        <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-          <div class="flex items-center space-x-4">
-            <%= link_to "Cancel", persona_path(@persona), class: "text-gray-600 hover:text-gray-900 font-medium" %>
-            <%= button_to "Delete Persona", persona_path(@persona), method: :delete, 
-              data: { confirm: "Are you sure? This will delete all interpretations by this persona." },
-              class: "text-red-600 hover:text-red-700 font-medium" %>
-          </div>
-          <%= f.submit "Update Persona", class: "px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity cursor-pointer" %>
-        </div>
-      <% end %>
+      <%= render "form",
+        persona: @persona,
+        form_url: persona_path(@persona),
+        form_method: :patch,
+        submit_text: "Update Persona",
+        cancel_text: "Cancel",
+        cancel_path: persona_path(@persona),
+        show_delete: true %>
     </div>
   </div>
 </div>
-

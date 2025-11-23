@@ -6,8 +6,27 @@
   <% else %>
     <div class="flex items-center justify-center py-12">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style="border-color: <%= persona.color_primary %>;"></div>
-        <p class="text-gray-600 text-lg">The <%= persona.name %> is thinking hard about a full analysis...</p>
+        <!-- Brain thinking animation -->
+        <div class="relative w-24 h-24 mx-auto mb-6">
+          <!-- Animated brain emoji with pulse effect -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-7xl animate-pulse" style="animation-duration: 1.5s;">
+              🧠
+            </div>
+          </div>
+          <!-- Thinking dots -->
+          <div class="absolute -right-3 -top-3 flex space-x-1">
+            <div class="w-2.5 h-2.5 rounded-full animate-bounce" style="background-color: <%= persona.color_primary %>; animation-delay: 0s;"></div>
+            <div class="w-2.5 h-2.5 rounded-full animate-bounce" style="background-color: <%= persona.color_primary %>; animation-delay: 0.2s;"></div>
+            <div class="w-2.5 h-2.5 rounded-full animate-bounce" style="background-color: <%= persona.color_primary %>; animation-delay: 0.4s;"></div>
+          </div>
+        </div>
+        <p class="text-gray-700 text-xl font-medium mb-2">
+          <%= persona.name %> is crafting a detailed analysis...
+        </p>
+        <p class="text-gray-500 text-sm">
+          Deep thinking in progress • This may take a minute
+        </p>
       </div>
     </div>
   <% end %>

@@ -17,17 +17,17 @@ class NewsStoriesController < ApplicationController
       []
     end
 
-    # Combine all personas for display
-    @personas = @official_personas + @custom_personas
+    # Combine all personas for display (custom first, then official)
+    @personas = @custom_personas + @official_personas
 
     # Get or generate interpretations for all personas
     @interpretations = {}
     @personas.each do |persona|
       interpretation = @news_story.interpretation_for(persona)
 
-      # Generate on-demand if not exists
+      # Generate in background if not exists (async)
       unless interpretation
-        interpretation = generate_interpretation_sync(@news_story, persona)
+        generate_interpretation_async(@news_story, persona)
       end
 
       @interpretations[persona.id] = interpretation if interpretation
@@ -38,11 +38,8 @@ class NewsStoriesController < ApplicationController
 
   private
 
-  def generate_interpretation_sync(news_story, persona)
-    # For MVP, generate synchronously (will add async later)
-    InterpretationGeneratorService.new(
-      news_story: news_story,
-      persona: persona
-    ).generate!
+  def generate_interpretation_async(news_story, persona)
+    # Generate interpretation in background job
+    GenerateInterpretationJob.perform_async(news_story.id, persona.id)
   end
 end

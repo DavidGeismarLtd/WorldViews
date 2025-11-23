@@ -13,6 +13,7 @@ class Interpretation < ApplicationRecord
 
   # Callbacks
   after_commit :broadcast_detailed_content_update, if: :saved_change_to_detailed_content?
+  after_commit :broadcast_interpretation_created, on: :create
 
   # Instance methods
   def cache_key_name
@@ -36,6 +37,18 @@ class Interpretation < ApplicationRecord
       "interpretation_#{id}",
       target: "detailed_analysis_#{id}",
       partial: "interpretations/detailed_analysis",
+      locals: { interpretation: self, persona: persona }
+    )
+  end
+
+  def broadcast_interpretation_created
+    Rails.logger.info "📡 Broadcasting new interpretation for persona #{persona_id} on story #{news_story_id}"
+
+    # Broadcast to the news story's stream
+    broadcast_replace_to(
+      "news_story_#{news_story_id}_persona_#{persona_id}",
+      target: "interpretation_content_#{news_story_id}_#{persona_id}",
+      partial: "interpretations/content",
       locals: { interpretation: self, persona: persona }
     )
   end

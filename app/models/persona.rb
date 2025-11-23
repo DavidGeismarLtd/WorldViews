@@ -12,6 +12,8 @@ class Persona < ApplicationRecord
 
   # Callbacks
   before_validation :generate_slug, if: -> { slug.blank? && name.present? }
+  after_commit :enqueue_avatar_generation, on: :create, if: -> { avatar_url.blank? && !official? }
+  after_commit :broadcast_avatar_update, if: :saved_change_to_avatar_url?
 
   # Scopes
   scope :active, -> { where(active: true) }
@@ -81,5 +83,24 @@ class Persona < ApplicationRecord
 
   def generate_slug
     self.slug = name.parameterize
+  end
+
+  def enqueue_avatar_generation
+    GeneratePersonaAvatarJob.perform_async(id)
+  end
+
+  def broadcast_avatar_update
+    # Only broadcast if avatar_url was just added (not nil -> has URL)
+    return unless avatar_url.present?
+
+    Rails.logger.info "📡 Broadcasting avatar update for persona ##{id} (#{name})"
+
+    # Broadcast the update via Turbo Stream to replace avatar images
+    broadcast_replace_to(
+      "persona_#{id}",
+      target: "persona_avatar_#{id}",
+      partial: "personas/avatar",
+      locals: { persona: self }
+    )
   end
 end
