@@ -202,25 +202,6 @@
     </div>
   </div>
 
-  <!-- Visibility -->
-  <div class="mb-6">
-    <%= f.label :visibility, "Visibility", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-    <div class="space-y-2">
-      <label class="flex items-center">
-        <%= f.radio_button :visibility, "public", class: "mr-2" %>
-        <span class="text-gray-700"><strong>Public</strong> - Anyone can see and use this persona</span>
-      </label>
-      <label class="flex items-center">
-        <%= f.radio_button :visibility, "unlisted", class: "mr-2" %>
-        <span class="text-gray-700"><strong>Unlisted</strong> - Only people with the link can see it</span>
-      </label>
-      <label class="flex items-center">
-        <%= f.radio_button :visibility, "private", class: "mr-2" %>
-        <span class="text-gray-700"><strong>Private</strong> - Only you can see it</span>
-      </label>
-    </div>
-  </div>
-
   <!-- Active Toggle (only show for existing personas) -->
   <% unless persona.new_record? %>
     <div class="mb-6">

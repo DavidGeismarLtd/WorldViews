@@ -161,7 +161,7 @@
     <div class="mt-12">
       <h3 class="text-2xl font-bold text-gray-900 mb-6">See How Other Personas Interpret This Story</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <% Persona.active.ordered.where.not(id: @persona.id).each do |other_persona| %>
+        <% Persona.official.active.ordered.where.not(id: @persona.id).each do |other_persona| %>
           <% other_interpretation = @news_story.interpretation_for(other_persona) %>
           <% if other_interpretation %>
             <%= link_to interpretation_path(other_interpretation), class: "block bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-4 border-l-4", style: "border-color: #{other_persona.color_primary};" do %>

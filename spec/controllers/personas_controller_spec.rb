@@ -2,15 +2,36 @@ require 'rails_helper'
 
 RSpec.describe PersonasController, type: :controller do
   describe 'GET #index' do
-    it 'assigns all active personas ordered by display_order' do
-      persona1 = create(:persona, display_order: 2, active: true)
-      persona2 = create(:persona, display_order: 1, active: true)
+    it 'assigns official active personas ordered by display_order' do
+      official_persona1 = create(:persona, :official, display_order: 2, active: true)
+      official_persona2 = create(:persona, :official, display_order: 1, active: true)
+      custom_persona = create(:persona, :custom, display_order: 0, active: true)
       inactive_persona = create(:persona, :inactive)
 
       get :index
 
-      expect(assigns(:personas)).to eq([ persona2, persona1 ])
-      expect(assigns(:personas)).not_to include(inactive_persona)
+      expect(assigns(:official_personas)).to eq([ official_persona2, official_persona1 ])
+      expect(assigns(:official_personas)).not_to include(inactive_persona)
+      expect(assigns(:official_personas)).not_to include(custom_persona)
+    end
+
+    it 'assigns empty custom personas when user is not logged in' do
+      get :index
+      expect(assigns(:custom_personas)).to eq([])
+    end
+
+    it 'assigns user custom personas when user is logged in' do
+      user = create(:user)
+      sign_in user
+
+      user_persona1 = create(:persona, :custom, user: user, display_order: 2, active: true)
+      user_persona2 = create(:persona, :custom, user: user, display_order: 1, active: true)
+      other_user_persona = create(:persona, :custom, display_order: 0, active: true)
+
+      get :index
+
+      expect(assigns(:custom_personas)).to eq([ user_persona2, user_persona1 ])
+      expect(assigns(:custom_personas)).not_to include(other_user_persona)
     end
 
     it 'renders the index template' do
@@ -42,7 +63,7 @@ RSpec.describe PersonasController, type: :controller do
     it 'assigns recent interpretations ordered by most recent first' do
       get :show, params: { slug: persona.slug }
       recent = assigns(:recent_interpretations)
-      
+
       expect(recent.count).to eq(2)
       expect(recent.first.news_story).to eq(news_story2)
       expect(recent.last.news_story).to eq(news_story1)
@@ -50,9 +71,9 @@ RSpec.describe PersonasController, type: :controller do
 
     it 'limits recent interpretations to 10' do
       11.times { create(:interpretation, persona: persona) }
-      
+
       get :show, params: { slug: persona.slug }
-      
+
       expect(assigns(:recent_interpretations).count).to eq(10)
     end
 
@@ -75,4 +96,3 @@ RSpec.describe PersonasController, type: :controller do
     end
   end
 end
-

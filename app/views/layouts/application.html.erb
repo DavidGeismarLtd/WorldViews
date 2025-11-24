@@ -51,7 +51,7 @@
               <%= link_to new_persona_path, class: "text-purple-600 hover:text-purple-700 font-semibold transition-colors" do %>
                 ✨ Create Persona
               <% end %>
-              <%= link_to destroy_user_session_path, method: :delete, class: "text-gray-700 hover:text-gray-900 font-medium transition-colors" do %>
+              <%= button_to destroy_user_session_path, method: :delete, class: "text-gray-700 hover:text-gray-900 font-medium transition-colors bg-transparent border-0 cursor-pointer p-0" do %>
                 Logout
               <% end %>
             <% else %>
@@ -84,7 +84,7 @@
             <%= link_to new_persona_path, class: "block py-2 text-purple-600 hover:text-purple-700 font-semibold" do %>
               ✨ Create Persona
             <% end %>
-            <%= link_to destroy_user_session_path, method: :delete, class: "block py-2 text-gray-700 hover:text-gray-900 font-medium" do %>
+            <%= button_to destroy_user_session_path, method: :delete, class: "block py-2 text-gray-700 hover:text-gray-900 font-medium bg-transparent border-0 cursor-pointer p-0 text-left w-full" do %>
               Logout
             <% end %>
           <% else %>
