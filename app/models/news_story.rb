@@ -1,3 +1,31 @@
+# == Schema Information
+#
+# Table name: news_stories
+#
+#  id           :bigint           not null, primary key
+#  active       :boolean          default(TRUE), not null
+#  category     :string
+#  featured     :boolean          default(FALSE), not null
+#  full_content :text
+#  headline     :string           not null
+#  image_url    :string
+#  metadata     :jsonb
+#  published_at :datetime
+#  source       :string           not null
+#  source_url   :string
+#  summary      :text
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  external_id  :string           not null
+#
+# Indexes
+#
+#  index_news_stories_on_category             (category)
+#  index_news_stories_on_created_at           (created_at)
+#  index_news_stories_on_external_id          (external_id) UNIQUE
+#  index_news_stories_on_featured_and_active  (featured,active)
+#  index_news_stories_on_published_at         (published_at)
+#
 class NewsStory < ApplicationRecord
   # Associations
   has_many :interpretations, dependent: :destroy
@@ -16,6 +44,14 @@ class NewsStory < ApplicationRecord
   scope :featured, -> { where(featured: true) }
   scope :recent, -> { order(published_at: :desc) }
   scope :by_category, ->(category) { where(category: category) }
+  scope :search, ->(query) {
+    return all if query.blank?
+
+    where(
+      "headline ILIKE :query OR summary ILIKE :query OR source ILIKE :query OR category ILIKE :query",
+      query: "%#{sanitize_sql_like(query)}%"
+    )
+  }
 
   # Class methods
   def self.latest(limit = 10)

@@ -1,0 +1,10 @@
+<% if pagy.next %>
+  <div data-infinite-scroll-target="pagination" class="mt-8">
+    <%= link_to "Load more stories...",
+        pagy_url_for(pagy, pagy.next, request_path: request.path, params: request.query_parameters),
+        class: "block w-full text-center px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200",
+        data: { turbo_stream: true },
+        rel: "next" %>
+  </div>
+<% end %>
+

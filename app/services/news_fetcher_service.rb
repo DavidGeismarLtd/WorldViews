@@ -52,6 +52,31 @@ class NewsFetcherService
     all_results
   end
 
+
+  def fetch_top_headlines(category: "general", limit: 10)
+    # Require API key - no mock data fallback in production
+    if @api_key.blank?
+      error_msg = "❌ NEWS_API_KEY is not set! Cannot fetch news."
+      Rails.logger.error error_msg
+      raise ArgumentError, error_msg
+    end
+
+    response = self.class.get("/top-headlines", query: {
+      apiKey: @api_key,
+      country: "us",
+      category: category,
+      pageSize: limit
+    })
+
+    binding.pry
+    if response.success?
+      parse_response(response)
+    else
+      Rails.logger.error "❌ NewsAPI error: #{response.code} - #{response.message}"
+      []
+    end
+  end
+
   private
 
   def process_and_store_articles(articles)
@@ -88,29 +113,6 @@ class NewsFetcherService
       skipped: skipped_stories,
       total: articles.count
     }
-  end
-
-  def fetch_top_headlines(category: "general", limit: 10)
-    # Require API key - no mock data fallback in production
-    if @api_key.blank?
-      error_msg = "❌ NEWS_API_KEY is not set! Cannot fetch news."
-      Rails.logger.error error_msg
-      raise ArgumentError, error_msg
-    end
-
-    response = self.class.get("/top-headlines", query: {
-      apiKey: @api_key,
-      country: "us",
-      category: category,
-      pageSize: limit
-    })
-
-    if response.success?
-      parse_response(response)
-    else
-      Rails.logger.error "❌ NewsAPI error: #{response.code} - #{response.message}"
-      []
-    end
   end
 
   # Fetch news since a specific date (for incremental updates)

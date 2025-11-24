@@ -1,3 +1,34 @@
+# == Schema Information
+#
+# Table name: personas
+#
+#  id              :bigint           not null, primary key
+#  active          :boolean          default(TRUE), not null
+#  avatar_url      :string
+#  color_primary   :string
+#  color_secondary :string
+#  description     :text
+#  display_order   :integer          default(0)
+#  name            :string           not null
+#  official        :boolean          default(FALSE), not null
+#  slug            :string           not null
+#  system_prompt   :text             not null
+#  visibility      :string           default("public"), not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  user_id         :bigint
+#
+# Indexes
+#
+#  index_personas_on_active         (active)
+#  index_personas_on_display_order  (display_order)
+#  index_personas_on_slug           (slug) UNIQUE
+#  index_personas_on_user_id        (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
+#
 class Persona < ApplicationRecord
   # Associations
   belongs_to :user, optional: true

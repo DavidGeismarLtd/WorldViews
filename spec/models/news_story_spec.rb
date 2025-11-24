@@ -1,3 +1,31 @@
+# == Schema Information
+#
+# Table name: news_stories
+#
+#  id           :bigint           not null, primary key
+#  active       :boolean          default(TRUE), not null
+#  category     :string
+#  featured     :boolean          default(FALSE), not null
+#  full_content :text
+#  headline     :string           not null
+#  image_url    :string
+#  metadata     :jsonb
+#  published_at :datetime
+#  source       :string           not null
+#  source_url   :string
+#  summary      :text
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  external_id  :string           not null
+#
+# Indexes
+#
+#  index_news_stories_on_category             (category)
+#  index_news_stories_on_created_at           (created_at)
+#  index_news_stories_on_external_id          (external_id) UNIQUE
+#  index_news_stories_on_featured_and_active  (featured,active)
+#  index_news_stories_on_published_at         (published_at)
+#
 require 'rails_helper'
 
 RSpec.describe NewsStory, type: :model do
@@ -59,6 +87,63 @@ RSpec.describe NewsStory, type: :model do
       it 'filters stories by category' do
         expect(NewsStory.by_category('technology')).to include(tech_story)
         expect(NewsStory.by_category('technology')).not_to include(active_story)
+      end
+    end
+
+    describe '.search' do
+      let!(:story1) { create(:news_story, headline: 'Breaking: AI Revolution in Healthcare', source: 'TechNews', category: 'technology') }
+      let!(:story2) { create(:news_story, headline: 'Stock Market Update', source: 'Bloomberg', category: 'business') }
+      let!(:story3) { create(:news_story, headline: 'New AI Regulations Announced', summary: 'Government announces new AI policies', source: 'Reuters', category: 'politics') }
+
+      it 'returns all stories when query is blank' do
+        results = NewsStory.search('')
+        expect(results.count).to be >= 3
+      end
+
+      it 'returns all stories when query is nil' do
+        results = NewsStory.search(nil)
+        expect(results.count).to be >= 3
+      end
+
+      it 'searches by headline' do
+        results = NewsStory.search('AI Revolution')
+        expect(results).to include(story1)
+        expect(results).not_to include(story2)
+      end
+
+      it 'searches by source' do
+        results = NewsStory.search('Bloomberg')
+        expect(results).to include(story2)
+        expect(results).not_to include(story1)
+      end
+
+      it 'searches by category' do
+        results = NewsStory.search('technology')
+        expect(results).to include(story1)
+        expect(results).not_to include(story2)
+      end
+
+      it 'searches by summary' do
+        results = NewsStory.search('Government announces')
+        expect(results).to include(story3)
+        expect(results).not_to include(story1)
+      end
+
+      it 'is case insensitive' do
+        results = NewsStory.search('ai revolution')
+        expect(results).to include(story1)
+      end
+
+      it 'finds partial matches' do
+        results = NewsStory.search('AI')
+        expect(results).to include(story1, story3)
+        expect(results).not_to include(story2)
+      end
+
+      it 'handles special SQL characters safely' do
+        expect {
+          NewsStory.search("'; DROP TABLE news_stories; --")
+        }.not_to raise_error
       end
     end
   end

@@ -1,0 +1,6 @@
+<%= turbo_frame_tag "news_stories" do %>
+  <div class="space-y-4">
+    <%= render partial: "stories_list", locals: { news_stories: news_stories, pagy: pagy, query: query } %>
+  </div>
+<% end %>
+

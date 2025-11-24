@@ -1,0 +1,8 @@
+<%= turbo_stream.append "stories_container" do %>
+  <%= render partial: "story_cards", locals: { news_stories: @news_stories } %>
+<% end %>
+
+<%= turbo_stream.replace "pagination_container" do %>
+  <%= render partial: "pagination", locals: { pagy: @pagy, query: @query } %>
+<% end %>
+

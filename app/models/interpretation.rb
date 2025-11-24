@@ -1,3 +1,32 @@
+# == Schema Information
+#
+# Table name: interpretations
+#
+#  id                 :bigint           not null, primary key
+#  cached             :boolean          default(FALSE)
+#  content            :text             not null
+#  detailed_content   :text
+#  generation_time_ms :integer
+#  llm_model          :string
+#  llm_tokens_used    :integer
+#  metadata           :jsonb
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  news_story_id      :bigint           not null
+#  persona_id         :bigint           not null
+#
+# Indexes
+#
+#  index_interpretations_on_created_at                    (created_at)
+#  index_interpretations_on_news_story_id                 (news_story_id)
+#  index_interpretations_on_news_story_id_and_persona_id  (news_story_id,persona_id) UNIQUE
+#  index_interpretations_on_persona_id                    (persona_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (news_story_id => news_stories.id)
+#  fk_rails_...  (persona_id => personas.id)
+#
 class Interpretation < ApplicationRecord
   # Associations
   belongs_to :news_story

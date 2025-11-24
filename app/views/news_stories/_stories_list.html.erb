@@ -1,0 +1,23 @@
+<% if news_stories.any? %>
+  <div id="stories_container" class="space-y-4">
+    <%= render partial: "story_cards", locals: { news_stories: news_stories } %>
+  </div>
+
+  <div id="pagination_container">
+    <%= render partial: "pagination", locals: { pagy: pagy, query: query } %>
+  </div>
+<% else %>
+  <!-- Empty State -->
+  <div class="text-center py-12">
+    <% if defined?(query) && query.present? %>
+      <div class="text-6xl mb-4">🔍</div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-2">No stories found</h3>
+      <p class="text-gray-600 mb-4">We couldn't find any stories matching "<%= query %>"</p>
+      <%= link_to "Clear search", news_stories_path, class: "inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors", data: { turbo_frame: "_top" } %>
+    <% else %>
+      <div class="text-6xl mb-4">📰</div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-2">No stories yet</h3>
+      <p class="text-gray-600">Check back soon for the latest news and perspectives!</p>
+    <% end %>
+  </div>
+<% end %>
