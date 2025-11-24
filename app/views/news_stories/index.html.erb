@@ -81,11 +81,9 @@
         <% @featured_stories.each do |story| %>
           <%= link_to news_story_path(story), class: "group" do %>
             <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <% if story.image_url.present? %>
-                <div class="aspect-video bg-gray-200 overflow-hidden">
-                  <img src="<%= story.image_url %>" alt="<%= story.headline %>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                </div>
-              <% end %>
+              <div class="aspect-video bg-gray-200 overflow-hidden">
+                <img src="<%= story.display_image_url %>" alt="<%= story.headline %>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              </div>
               <div class="p-6">
                 <div class="flex items-center space-x-2 mb-3">
                   <span class="text-xs font-semibold text-white bg-red-500 px-2 py-1 rounded">FEATURED</span>
@@ -116,11 +114,9 @@
         <%= link_to news_story_path(story), class: "block" do %>
           <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6">
             <div class="flex items-start space-x-4">
-              <% if story.image_url.present? %>
-                <div class="flex-shrink-0 w-32 h-32 bg-gray-200 rounded-lg overflow-hidden">
-                  <img src="<%= story.image_url %>" alt="<%= story.headline %>" class="w-full h-full object-cover">
-                </div>
-              <% end %>
+              <div class="flex-shrink-0 w-32 h-32 bg-gray-200 rounded-lg overflow-hidden">
+                <img src="<%= story.display_image_url %>" alt="<%= story.headline %>" class="w-full h-full object-cover">
+              </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center space-x-2 mb-2">
                   <span class="text-xs font-semibold text-gray-500 uppercase"><%= story.category %></span>

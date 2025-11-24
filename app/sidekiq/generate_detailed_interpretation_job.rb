@@ -11,34 +11,16 @@ class GenerateDetailedInterpretationJob
 
     Rails.logger.info "📝 [Sidekiq] Generating detailed interpretation: #{interpretation.persona.name} → #{interpretation.news_story.headline[0..50]}..."
 
-    # Generate detailed interpretation
+    # Generate detailed interpretation using the service
     service = InterpretationGeneratorService.new(
       news_story: interpretation.news_story,
       persona: interpretation.persona
     )
 
-    # Fetch full article content
-    full_content = interpretation.news_story.fetch_full_content
+    # This will update the existing interpretation with detailed content
+    # and trigger the after_commit callback to broadcast the update
+    service.generate_detailed!
 
-    # Check cache for detailed interpretation (v2 = HTML structured format)
-    detailed_cache_key = "interpretation/#{interpretation.news_story_id}/#{interpretation.persona_id}/detailed/v2"
-    cached_detailed = Rails.cache.read(detailed_cache_key)
-
-    if cached_detailed
-      Rails.logger.info "  ✓ Found detailed in cache"
-      interpretation.update!(detailed_content: cached_detailed[:content])
-      return
-    end
-
-    # Generate detailed interpretation using full article
-    detailed_result = service.send(:generate_detailed_content, full_content)
-
-    # Cache the detailed result
-    Rails.cache.write(detailed_cache_key, detailed_result, expires_in: 30.days)
-
-    # Update interpretation with detailed content (this will trigger after_commit callback)
-    interpretation.update!(detailed_content: detailed_result[:content])
-
-    Rails.logger.info "  ✅ Generated detailed analysis (#{detailed_result[:tokens_used]} tokens)"
+    Rails.logger.info "  ✅ [Sidekiq] Detailed interpretation generated successfully for #{interpretation.persona.name}"
   end
 end

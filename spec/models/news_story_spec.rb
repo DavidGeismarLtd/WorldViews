@@ -169,4 +169,45 @@ RSpec.describe NewsStory, type: :model do
       end
     end
   end
+
+  describe '#display_image_url' do
+    context 'when image_url is present' do
+      it 'returns the actual image_url' do
+        story = create(:news_story, image_url: 'https://example.com/image.jpg')
+        expect(story.display_image_url).to eq('https://example.com/image.jpg')
+      end
+    end
+
+    context 'when image_url is blank' do
+      it 'returns the default image url' do
+        story = create(:news_story, image_url: nil, category: 'technology')
+        expect(story.display_image_url).to eq(story.default_image_url)
+      end
+    end
+
+    context 'when image_url is empty string' do
+      it 'returns the default image url' do
+        story = create(:news_story, image_url: '', category: 'politics')
+        expect(story.display_image_url).to eq(story.default_image_url)
+      end
+    end
+  end
+
+  describe '#default_image_url' do
+    context 'when category is present' do
+      it 'generates a placeholder with the category name' do
+        story = create(:news_story, category: 'technology')
+        expect(story.default_image_url).to include('Technology')
+        expect(story.default_image_url).to include('placehold.co')
+      end
+    end
+
+    context 'when category is blank' do
+      it 'generates a placeholder with "news" as default' do
+        story = create(:news_story, category: nil)
+        expect(story.default_image_url).to include('News')
+        expect(story.default_image_url).to include('placehold.co')
+      end
+    end
+  end
 end

@@ -1,9 +1,12 @@
-# Service to generate persona interpretations for news stories
+# Service to orchestrate persona interpretation generation for news stories
+# Responsible for: Workflow coordination, caching, and database persistence
 class InterpretationGeneratorService
   def initialize(news_story:, persona:)
     @news_story = news_story
     @persona = persona
     @llm_client = LlmClientService.new
+    @prompt_builder = PromptBuilderService.new(persona: @persona)
+    @content_builder = NewsContentBuilderService.new(news_story: @news_story)
   end
 
   def generate!
@@ -13,40 +16,28 @@ class InterpretationGeneratorService
 
     Rails.logger.info "🎭 Generating interpretation: #{@persona.name} → #{@news_story.headline[0..50]}..."
 
-    # Check cache first for quick take (v2 = uses full content)
-    cache_key = "interpretation/#{@news_story.id}/#{@persona.id}/v2"
+    # Check cache first for quick take (v3 = refactored architecture)
+    cache_key = build_cache_key(:quick)
     cached_result = Rails.cache.read(cache_key)
 
     if cached_result
       Rails.logger.info "  ✓ Found in cache"
-      return create_interpretation_from_cache(cached_result)
+      return create_interpretation(cached_result, cached: true)
     end
 
-    # Generate quick take (using full content if available, otherwise headline + summary)
-    quick_result = @llm_client.generate_interpretation(
-      news_summary: build_news_summary,
-      persona_prompt: @persona.system_prompt
+    # Generate quick take using LLM
+    result = @llm_client.chat(
+      system_prompt: @prompt_builder.build_quick_take_prompt,
+      user_message: @prompt_builder.build_user_message(@content_builder.for_quick_take)
     )
 
-    # Cache the quick take
-    Rails.cache.write(cache_key, quick_result, expires_in: 30.days)
+    # Cache the result
+    Rails.cache.write(cache_key, result, expires_in: 30.days)
 
-    # Create interpretation record
-    interpretation = Interpretation.create!(
-      news_story: @news_story,
-      persona: @persona,
-      content: quick_result[:content],
-      llm_model: quick_result[:model],
-      llm_tokens_used: quick_result[:tokens_used],
-      generation_time_ms: quick_result[:generation_time_ms],
-      cached: false,
-      metadata: {
-        provider: quick_result[:provider],
-        generated_at: Time.current
-      }
-    )
+    # Create and return interpretation record
+    interpretation = create_interpretation(result, cached: false)
 
-    Rails.logger.info "  ✅ Generated quick take (#{quick_result[:tokens_used]} tokens, #{quick_result[:generation_time_ms]}ms)"
+    Rails.logger.info "  ✅ Generated quick take (#{result[:tokens_used]} tokens, #{result[:generation_time_ms]}ms)"
     interpretation
   end
 
@@ -61,88 +52,56 @@ class InterpretationGeneratorService
 
     Rails.logger.info "📝 Generating detailed interpretation: #{@persona.name} → #{@news_story.headline[0..50]}..."
 
-    # Check cache for detailed interpretation (v2 = HTML structured format)
-    detailed_cache_key = "interpretation/#{@news_story.id}/#{@persona.id}/detailed/v2"
-    cached_detailed = Rails.cache.read(detailed_cache_key)
+    # Check cache for detailed interpretation (v3 = refactored architecture)
+    cache_key = build_cache_key(:detailed)
+    cached_result = Rails.cache.read(cache_key)
 
-    if cached_detailed
+    if cached_result
       Rails.logger.info "  ✓ Found detailed in cache"
-      interpretation.update!(detailed_content: cached_detailed[:content])
+      interpretation.update!(detailed_content: cached_result[:content])
       return interpretation
     end
 
     # Fetch full article content
     full_content = @news_story.fetch_full_content
 
-    # Generate detailed content
-    detailed_result = generate_detailed_content(full_content)
+    # Generate detailed analysis using LLM
+    result = @llm_client.chat(
+      system_prompt: @prompt_builder.build_detailed_analysis_prompt,
+      user_message: @prompt_builder.build_user_message(
+        @content_builder.for_detailed_analysis(full_content)
+      )
+    )
 
-    # Cache the detailed result
-    Rails.cache.write(detailed_cache_key, detailed_result, expires_in: 30.days)
+    # Cache the result
+    Rails.cache.write(cache_key, result, expires_in: 30.days)
 
     # Update interpretation with detailed content
-    interpretation.update!(detailed_content: detailed_result[:content])
+    interpretation.update!(detailed_content: result[:content])
 
-    Rails.logger.info "  ✅ Generated detailed analysis (#{detailed_result[:tokens_used]} tokens)"
+    Rails.logger.info "  ✅ Generated detailed analysis (#{result[:tokens_used]} tokens)"
     interpretation
   end
 
   private
 
-  def generate_detailed_content(full_content)
-    # Generate detailed interpretation using full article
-    @llm_client.generate_interpretation(
-      news_summary: build_detailed_summary(full_content),
-      persona_prompt: build_detailed_prompt
-    )
+  def build_cache_key(type)
+    "interpretation/#{@news_story.id}/#{@persona.id}/#{type}/v3"
   end
 
-  def build_news_summary
-    # Use full content if available, otherwise use headline + summary
-    @news_story.content_for_interpretation
-  end
-
-  def build_detailed_summary(full_content)
-    # Build comprehensive summary for detailed analysis
-    summary = "HEADLINE: #{@news_story.headline}\n\n"
-    summary += "SOURCE: #{@news_story.source}\n\n"
-    summary += "FULL ARTICLE:\n#{full_content}"
-    summary
-  end
-
-  def build_detailed_prompt
-    # Enhanced prompt for detailed analysis with HTML structure
-    <<~PROMPT
-      #{@persona.system_prompt}
-
-      Provide a comprehensive, detailed analysis of this article. Go deeper than a quick take - analyze the implications, context, and what this means from your worldview.
-
-      Format your response as HTML using these tags only: <h3>, <h4>, <p>, <ul>, <li>, <strong>, <em>, <blockquote>
-
-      Structure your analysis like this:
-      - Start with an <h3> heading that captures your main reaction
-      - Use <h4> subheadings to organize different aspects of your analysis (e.g., "The Real Story", "What They're Not Telling You", "Why This Matters")
-      - Write 4-6 paragraphs using <p> tags
-      - Use <ul> and <li> for key points or lists where appropriate
-      - Use <strong> for emphasis and <em> for subtle points
-      - Use <blockquote> if you want to highlight a particularly important insight
-
-      Make it engaging, opinionated, and true to your character. This is your deep dive - show your full perspective!
-    PROMPT
-  end
-
-  def create_interpretation_from_cache(cached_result)
+  def create_interpretation(result, cached:)
     Interpretation.create!(
       news_story: @news_story,
       persona: @persona,
-      content: cached_result[:content],
-      llm_model: cached_result[:model],
-      llm_tokens_used: cached_result[:tokens_used],
-      generation_time_ms: cached_result[:generation_time_ms],
-      cached: true,
+      content: result[:content],
+      llm_model: result[:model],
+      llm_tokens_used: result[:tokens_used],
+      generation_time_ms: result[:generation_time_ms],
+      cached: cached,
       metadata: {
-        provider: cached_result[:provider],
-        cached_at: Time.current
+        provider: result[:provider],
+        generated_at: Time.current,
+        cached_at: cached ? Time.current : nil
       }
     )
   end

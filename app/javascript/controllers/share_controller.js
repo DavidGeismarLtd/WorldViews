@@ -11,7 +11,7 @@ export default class extends Controller {
   // Share using Web Share API (mobile-friendly) with fallback
   async share(event) {
     event.preventDefault()
-    
+
     const shareData = {
       title: this.titleValue || document.title,
       text: this.textValue || '',
@@ -38,7 +38,7 @@ export default class extends Controller {
   // Fallback share method - copy link to clipboard
   fallbackShare() {
     const url = this.urlValue || window.location.href
-    
+
     navigator.clipboard.writeText(url).then(() => {
       // Show success message
       this.showNotification('Link copied to clipboard! 📋')
@@ -51,21 +51,49 @@ export default class extends Controller {
   // Screenshot functionality
   async screenshot(event) {
     event.preventDefault()
-    
-    // For now, show a coming soon message
-    // In the future, we could use html2canvas or similar library
-    this.showNotification('📸 Screenshot feature coming soon!')
-    
-    // TODO: Implement screenshot functionality
-    // This would require adding html2canvas or similar library
-    // Example implementation:
-    // const element = document.querySelector('.max-w-4xl')
-    // const canvas = await html2canvas(element)
-    // const dataUrl = canvas.toDataURL('image/png')
-    // const link = document.createElement('a')
-    // link.download = 'worldviews-reality-check.png'
-    // link.href = dataUrl
-    // link.click()
+
+    // Check if html2canvas is available
+    if (typeof window.html2canvas === 'undefined') {
+      this.showNotification('❌ Screenshot library not loaded')
+      return
+    }
+
+    try {
+      this.showNotification('📸 Capturing screenshot...')
+
+      // Find the main content area to screenshot
+      const element = document.querySelector('.max-w-4xl')
+
+      if (!element) {
+        this.showNotification('❌ Could not find content to screenshot')
+        return
+      }
+
+      // Capture the screenshot using global html2canvas
+      const canvas = await window.html2canvas(element, {
+        backgroundColor: '#f9fafb',
+        scale: 2, // Higher quality
+        logging: false,
+        useCORS: true, // Allow cross-origin images
+        allowTaint: true
+      })
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        const timestamp = new Date().toISOString().slice(0, 10)
+        link.download = `worldviews-${timestamp}.png`
+        link.href = url
+        link.click()
+        URL.revokeObjectURL(url)
+        this.showNotification('✅ Screenshot saved!')
+      }, 'image/png')
+
+    } catch (error) {
+      console.error('Screenshot error:', error)
+      this.showNotification('❌ Failed to capture screenshot')
+    }
   }
 
   // Show a temporary notification
@@ -75,14 +103,14 @@ export default class extends Controller {
     notification.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg z-50 transition-all duration-300'
     notification.textContent = message
     notification.style.opacity = '0'
-    
+
     document.body.appendChild(notification)
-    
+
     // Fade in
     setTimeout(() => {
       notification.style.opacity = '1'
     }, 10)
-    
+
     // Fade out and remove
     setTimeout(() => {
       notification.style.opacity = '0'
@@ -92,4 +120,3 @@ export default class extends Controller {
     }, 2500)
   }
 }
-

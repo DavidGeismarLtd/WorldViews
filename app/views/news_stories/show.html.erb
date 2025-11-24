@@ -31,11 +31,9 @@
       <%= @news_story.headline %>
     </h1>
 
-    <% if @news_story.image_url.present? %>
-      <div class="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-6">
-        <img src="<%= @news_story.image_url %>" alt="<%= @news_story.headline %>" class="w-full h-full object-cover">
-      </div>
-    <% end %>
+    <div class="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-6">
+      <img src="<%= @news_story.display_image_url %>" alt="<%= @news_story.headline %>" class="w-full h-full object-cover">
+    </div>
 
     <p class="text-lg text-gray-700 leading-relaxed">
       <%= @news_story.summary %>
@@ -123,13 +121,53 @@
 
               <!-- Interpretation Content -->
               <div class="p-8">
-                <div id="interpretation_content_<%= @news_story.id %>_<%= persona.id %>">
+                <div id="interpretation_content_<%= @news_story.id %>_persona_<%= persona.id %>">
                   <% if interpretation %>
                     <%= render "interpretations/content", interpretation: interpretation, persona: persona %>
                   <% else %>
                     <%= render "interpretations/loading", persona: persona %>
                   <% end %>
                 </div>
+
+                <!-- Share This Interpretation -->
+                <% if interpretation %>
+                  <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div
+                      data-controller="share"
+                      data-share-url-value="<%= interpretation_url(interpretation) %>"
+                      data-share-title-value="<%= persona.name %>'s take on: <%= @news_story.headline %>"
+                      data-share-text-value="Check out <%= persona.name %>'s perspective: <%= @news_story.headline %>"
+                      class="flex items-center justify-between"
+                    >
+                      <p class="text-sm text-gray-600 font-medium">Share <%= persona.name %>'s take:</p>
+                      <div class="flex space-x-2">
+                        <button
+                          data-action="click->share#share"
+                          class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105"
+                          style="background-color: <%= persona.color_primary %>20; color: <%= persona.color_primary %>;"
+                          title="Share this interpretation"
+                        >
+                          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                          </svg>
+                          Share
+                        </button>
+                        <a
+                          href="https://twitter.com/intent/tweet?text=<%= CGI.escape("#{persona.name}'s take: #{@news_story.headline}") %>&url=<%= CGI.escape(interpretation_url(interpretation)) %>"
+                          target="_blank"
+                          rel="noopener"
+                          class="inline-flex items-center px-4 py-2 bg-black text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-all duration-200 hover:scale-105"
+                          title="Share on X/Twitter"
+                        >
+                          <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                          </svg>
+                          Tweet
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>

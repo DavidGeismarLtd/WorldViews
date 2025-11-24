@@ -47,7 +47,7 @@ class Interpretation < ApplicationRecord
     # Broadcast to the news story's stream
     broadcast_replace_to(
       "news_story_#{news_story_id}_persona_#{persona_id}",
-      target: "interpretation_content_#{news_story_id}_#{persona_id}",
+      target: "interpretation_content_#{news_story_id}_persona_#{persona_id}",
       partial: "interpretations/content",
       locals: { interpretation: self, persona: persona }
     )

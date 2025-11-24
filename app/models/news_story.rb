@@ -73,6 +73,17 @@ class NewsStory < ApplicationRecord
     end
   end
 
+  def display_image_url
+    # Return actual image URL if present, otherwise return a default placeholder
+    image_url.presence || default_image_url
+  end
+
+  def default_image_url
+    # Use a placeholder image service with category-specific images
+    category_param = category.presence || "news"
+    "https://placehold.co/800x450/6366f1/white?text=#{category_param.titleize}"
+  end
+
   private
 
   # Automatically mark the 3 newest stories as featured

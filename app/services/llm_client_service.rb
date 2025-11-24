@@ -1,4 +1,5 @@
 # Service to interact with LLM APIs using ruby_llm gem (OpenAI primary, Anthropic fallback)
+# Generic LLM client - no knowledge of specific use cases like "interpretations"
 class LlmClientService
   class LlmError < StandardError; end
 
@@ -10,29 +11,33 @@ class LlmClientService
     end
   end
 
-  def generate_interpretation(news_summary:, persona_prompt:, max_tokens: 500)
-    # Use mock responses in development if no API keys
-    if (ENV["OPENAI_API_KEY"].blank? && ENV["ANTHROPIC_API_KEY"].blank?)
-      return generate_mock_interpretation(news_summary, persona_prompt)
-    end
+  # Generic chat method - can be used for any LLM interaction
+  # @param system_prompt [String] The system prompt/instructions for the LLM
+  # @param user_message [String] The user's message/question
+  # @param max_tokens [Integer] Maximum tokens to generate
+  # @return [Hash] Response with :content, :model, :tokens_used, :generation_time_ms, :provider
+  def chat(system_prompt:, user_message:, max_tokens: 500)
+    # Use mock responses if no API keys available
+    return mock_response(user_message) if no_api_keys?
 
     # Try OpenAI first
-    generate_with_openai(news_summary, persona_prompt, max_tokens)
+    generate_with_openai(system_prompt, user_message, max_tokens)
   end
 
   private
 
-  def generate_mock_interpretation(news_summary, persona_prompt)
-    Rails.logger.info "🎭 Using mock LLM response"
+  def no_api_keys?
+    ENV["OPENAI_API_KEY"].blank? && ENV["ANTHROPIC_API_KEY"].blank?
+  end
 
-    # Detect persona type from prompt
-    persona_type = detect_persona_type(persona_prompt)
+  def mock_response(user_message)
+    Rails.logger.info "🎭 Using mock LLM response (no API keys configured)"
 
-    # Generate contextual mock response
-    mock_content = generate_mock_content(persona_type, news_summary)
+    # Extract first sentence for context
+    topic = user_message.split(".").first
 
     {
-      content: mock_content,
+      content: "Mock response for: #{topic}. This is a simulated LLM response for development/testing purposes.",
       model: "mock-gpt-4-turbo",
       tokens_used: rand(100..300),
       generation_time_ms: rand(500..1500),
@@ -40,66 +45,19 @@ class LlmClientService
     }
   end
 
-  def detect_persona_type(prompt)
-    case prompt.downcase
-    when /revolutionary|leftist|anti-capitalist|class struggle/
-      :revolutionary
-    when /moderate|centrist|balanced|rational/
-      :moderate
-    when /patriot|conservative|nationalist|tradition/
-      :patriot
-    when /skeptic|conspiracy|hidden agenda/
-      :skeptic
-    when /disruptor|tech|silicon valley|innovation/
-      :disruptor
-    when /burnt out|millennial|gen-z|exhausted/
-      :burnt_out
-    else
-      :moderate
-    end
-  end
-
-  def generate_mock_content(persona_type, news_summary)
-    # Extract key topic from summary
-    topic = news_summary.split(".").first
-
-    case persona_type
-    when :revolutionary
-      "This is just another example of how the capitalist elite consolidates power while workers get screwed. #{topic}? Follow the money—it always leads back to billionaires protecting their interests. We need radical change, not incremental reforms!"
-
-    when :moderate
-      "Look, everyone's overreacting here. #{topic} requires a nuanced, data-driven approach. Both extremes are missing the point. We need measured policy solutions, not emotional grandstanding. Let's focus on what actually works."
-
-    when :patriot
-      "Finally, some common sense! #{topic} shows why we need to put America first and stop letting foreign interests dictate our future. This is about protecting our values, our jobs, and our sovereignty. God bless America!"
-
-    when :skeptic
-      "Wake up, people. #{topic}? That's exactly what THEY want you to focus on while the real agenda unfolds behind closed doors. Connect the dots. This isn't coincidence—it's coordinated. Question everything."
-
-    when :disruptor
-      "This is HUGE for the innovation ecosystem! #{topic} is a paradigm shift that will 10x the market. We're talking exponential growth, massive disruption, and game-changing synergies. Time to move fast and break things!"
-
-    when :burnt_out
-      "Cool, cool. #{topic}. Another thing to add to the list of reasons we're all doomed. At this point I'm just here for the memes and the existential dread. Someone wake me up when the simulation ends lol."
-
-    else
-      "Interesting development. #{topic} certainly raises important questions about our society and where we're headed. Time will tell how this plays out."
-    end
-  end
-
-  def generate_with_openai(news_summary, persona_prompt, max_tokens)
-    Rails.logger.info "🤖 Generating interpretation with OpenAI GPT-4..."
+  def generate_with_openai(system_prompt, user_message, max_tokens)
+    Rails.logger.info "🤖 Generating with OpenAI GPT-4..."
 
     start_time = Time.current
 
     # Create a chat instance with OpenAI GPT-4
     chat = RubyLLM.chat(model: "gpt-4-turbo-preview")
 
-    # Set system prompt (persona) using with_instructions
-    chat.with_instructions(persona_prompt)
+    # Set system prompt
+    chat.with_instructions(system_prompt)
 
-    # Ask the question
-    response = chat.ask("React to this news: #{news_summary}")
+    # Send user message
+    response = chat.ask(user_message)
 
     generation_time = ((Time.current - start_time) * 1000).to_i
 
@@ -110,21 +68,25 @@ class LlmClientService
       generation_time_ms: generation_time,
       provider: "openai"
     }
+  rescue StandardError => e
+    Rails.logger.error "❌ OpenAI error: #{e.message}"
+    # Fallback to Anthropic
+    generate_with_anthropic(system_prompt, user_message, max_tokens)
   end
 
-  def generate_with_anthropic(news_summary, persona_prompt, max_tokens)
-    Rails.logger.info "🤖 Generating interpretation with Anthropic Claude..."
+  def generate_with_anthropic(system_prompt, user_message, max_tokens)
+    Rails.logger.info "🤖 Generating with Anthropic Claude..."
 
     start_time = Time.current
 
     # Create a chat instance with Claude
     chat = RubyLLM.chat(model: "claude-3-sonnet-20240229")
 
-    # Set system prompt (persona) using with_instructions
-    chat.with_instructions(persona_prompt)
+    # Set system prompt
+    chat.with_instructions(system_prompt)
 
-    # Ask the question
-    response = chat.ask("React to this news: #{news_summary}")
+    # Send user message
+    response = chat.ask(user_message)
 
     generation_time = ((Time.current - start_time) * 1000).to_i
 
@@ -135,5 +97,8 @@ class LlmClientService
       generation_time_ms: generation_time,
       provider: "anthropic"
     }
+  rescue StandardError => e
+    Rails.logger.error "❌ Anthropic error: #{e.message}"
+    raise LlmError, "All LLM providers failed: #{e.message}"
   end
 end
