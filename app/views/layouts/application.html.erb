@@ -41,7 +41,7 @@
 
           <!-- Navigation -->
           <nav class="hidden sm:flex items-center space-x-6">
-            <%= link_to root_path, class: "text-gray-700 hover:text-gray-900 font-medium transition-colors" do %>
+            <%= link_to news_stories_path, class: "text-gray-700 hover:text-gray-900 font-medium transition-colors" do %>
               📰 Stories
             <% end %>
             <%= link_to personas_path, class: "text-gray-700 hover:text-gray-900 font-medium transition-colors" do %>
@@ -74,7 +74,7 @@
 
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden sm:hidden mt-4 pb-2 border-t border-gray-200 pt-4">
-          <%= link_to root_path, class: "block py-2 text-gray-700 hover:text-gray-900 font-medium" do %>
+          <%= link_to news_stories_path, class: "block py-2 text-gray-700 hover:text-gray-900 font-medium" do %>
             📰 Stories
           <% end %>
           <%= link_to personas_path, class: "block py-2 text-gray-700 hover:text-gray-900 font-medium" do %>

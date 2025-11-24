@@ -1,136 +1,10 @@
-<% content_for :title, "Worldviews - The news, seen through everyone's delusions" %>
+<% content_for :title, "News Stories - Worldviews" %>
 
-<!-- Hero Section -->
-<div class="relative overflow-hidden bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 mb-16">
-  <!-- Animated background pattern -->
-  <div class="absolute inset-0 opacity-10">
-    <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
-  </div>
-
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-    <div class="text-center">
-      <!-- Main Headline -->
-      <div class="mb-8">
-        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-4 tracking-tight">
-          Worldviews
-        </h1>
-        <div class="flex items-center justify-center space-x-3 text-xl sm:text-2xl text-yellow-300 font-bold">
-          <span>📰</span>
-          <p class="italic">"The news, seen through everyone's delusions"</p>
-          <span>🤡</span>
-        </div>
-      </div>
-
-      <!-- Value Proposition -->
-      <div class="max-w-4xl mx-auto mb-10">
-        <p class="text-xl sm:text-2xl text-white/95 font-medium mb-6 leading-relaxed">
-          Ever wonder why your uncle and your college roommate read the <span class="font-bold text-yellow-300">same article</span>
-          and come away with <span class="font-bold text-yellow-300">completely opposite conclusions?</span>
-        </p>
-        <p class="text-lg sm:text-xl text-white/85 leading-relaxed">
-          Watch as <span class="font-semibold">six wildly different personas</span> interpret the same news story.
-          It's like a political Rorschach test, except everyone's wrong in their own special way.
-        </p>
-      </div>
-
-      <!-- CTA Buttons -->
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-        <a href="#stories" class="inline-flex items-center px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
-          <span>🔥</span>
-          <span class="ml-2">See Today's Hot Takes</span>
-        </a>
-        <%= link_to personas_path, class: "inline-flex items-center px-8 py-4 bg-purple-800/50 backdrop-blur-sm text-white border-2 border-white/30 rounded-xl font-bold text-lg hover:bg-purple-700/50 hover:scale-105 transition-all duration-300" do %>
-          <span>🎭</span>
-          <span class="ml-2">Meet the Personas</span>
-        <% end %>
-      </div>
-
-      <!-- Social Proof / Stats -->
-      <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-        <div class="text-center">
-          <div class="text-3xl sm:text-4xl font-bold text-white mb-1"><%= @news_stories.count %></div>
-          <div class="text-xs sm:text-sm text-white/70 font-medium">Stories Analyzed</div>
-        </div>
-        <div class="text-center">
-          <div class="text-3xl sm:text-4xl font-bold text-white mb-1">6</div>
-          <div class="text-xs sm:text-sm text-white/70 font-medium">Delusional Personas</div>
-        </div>
-        <div class="text-center">
-          <div class="text-3xl sm:text-4xl font-bold text-white mb-1">∞</div>
-          <div class="text-xs sm:text-sm text-white/70 font-medium">Biases Confirmed</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Decorative wave -->
-  <div class="relative -mb-1">
-    <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-12 sm:h-16">
-      <path d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 43.3C840 40 960 40 1080 46.7C1200 53 1320 67 1380 73.3L1440 80V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z" fill="#F9FAFB"/>
-    </svg>
-  </div>
-</div>
-
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" id="stories">
-
-  <!-- Featured Personas Section -->
-  <div class="mb-16">
-    <div class="text-center mb-10">
-      <h3 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-        🎭 Meet Your Interpreters
-      </h3>
-      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-        Six personalities. Six completely different takes on reality.
-        <span class="italic">Choose your fighter</span> (or just watch them all argue).
-      </p>
-    </div>
-
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-      <% Persona.official.active.ordered.each do |persona| %>
-        <%= link_to persona_path(persona), class: "group" do %>
-          <div class="text-center transform transition-all duration-300 hover:-translate-y-2">
-            <!-- Avatar with glow effect -->
-            <div class="relative mb-3">
-              <div class="absolute inset-0 rounded-full blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300" style="background-color: <%= persona.color_primary %>;"></div>
-              <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto overflow-hidden ring-4 ring-white shadow-xl group-hover:ring-8 transition-all duration-300" style="box-shadow: 0 10px 40px -10px <%= persona.color_primary %>80;">
-                <% if persona.avatar_url.present? %>
-                  <%= image_tag persona.avatar_url, alt: persona.name, class: "w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300" %>
-                <% else %>
-                  <div class="w-full h-full flex items-center justify-center text-3xl font-bold" style="background-color: <%= persona.color_primary %>20; color: <%= persona.color_primary %>;">
-                    <%= persona.name[0] %>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-
-            <!-- Name -->
-            <div class="font-bold text-sm sm:text-base text-gray-900 mb-1 group-hover:text-opacity-80 transition-colors" style="color: <%= persona.color_primary %>;">
-              <%= persona.name %>
-            </div>
-
-            <!-- Description -->
-            <div class="text-xs text-gray-500 italic line-clamp-2 px-2">
-              "<%= persona.description %>"
-            </div>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
-
-    <!-- View All Personas CTA -->
-    <div class="text-center mt-10">
-      <%= link_to personas_path, class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300" do %>
-        <span>See Full Profiles & Their Hot Takes</span>
-        <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-        </svg>
-      <% end %>
-    </div>
-  </div>
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
   <!-- Search Bar -->
-  <div class="mb-8">
-    <%= form_with url: news_stories_path, method: :get, class: "relative", data: { turbo_frame: "news_stories" } do |f| %>
+  <div class="mb-8" data-controller="search">
+    <%= form_with url: news_stories_path, method: :get, class: "relative", data: { turbo_frame: "news_stories", search_target: "form", action: "turbo:submit-end->search#hideLoader" } do |f| %>
       <div class="relative">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,14 +15,21 @@
             value: @query,
             placeholder: "Search stories by headline, source, or category...",
             class: "block w-full pl-12 pr-32 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200",
-            autocomplete: "off" %>
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+            autocomplete: "off",
+            data: { search_target: "input", action: "input->search#search" } %>
+        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-2">
+          <!-- Loader -->
+          <div data-search-target="loader" class="hidden">
+            <svg class="animate-spin h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
           <% if @query.present? %>
-            <%= link_to news_stories_path, class: "mr-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium" do %>
+            <%= link_to news_stories_path, class: "px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium" do %>
               Clear
             <% end %>
           <% end %>
-          <%= f.submit "Search", class: "px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer" %>
         </div>
       </div>
     <% end %>
@@ -161,39 +42,6 @@
       </div>
     <% end %>
   </div>
-
-  <!-- Featured Stories (only show when not searching) -->
-  <% if @featured_stories.any? && @query.blank? %>
-    <div class="mb-12">
-      <h3 class="text-2xl font-bold text-gray-900 mb-6">🔥 Featured Stories</h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <% @featured_stories.each do |story| %>
-          <%= link_to news_story_path(story), class: "group" do %>
-            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <div class="aspect-video bg-gray-200 overflow-hidden">
-                <img src="<%= story.display_image_url %>" alt="<%= story.headline %>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-              </div>
-              <div class="p-6">
-                <div class="flex items-center space-x-2 mb-3">
-                  <span class="text-xs font-semibold text-white bg-red-500 px-2 py-1 rounded">FEATURED</span>
-                  <span class="text-xs text-gray-500"><%= story.source %></span>
-                </div>
-                <h4 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  <%= story.headline %>
-                </h4>
-                <p class="text-sm text-gray-600 line-clamp-2">
-                  <%= story.summary %>
-                </p>
-                <div class="mt-4 text-sm text-blue-600 font-semibold">
-                  View all perspectives →
-                </div>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
 
   <!-- All Stories -->
   <div>

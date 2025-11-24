@@ -11,7 +11,10 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  root "news_stories#index"
+  root "pages#home"
+
+  # Pages
+  get "home", to: "pages#home"
 
   # News stories
   resources :news_stories, only: [ :index, :show ]
