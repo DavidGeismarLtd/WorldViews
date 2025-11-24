@@ -1,9 +1,69 @@
 <% content_for :title, "News Stories - Worldviews" %>
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Animated Background Pattern with Persona Avatars -->
+<div class="fixed inset-0 pointer-events-none opacity-10 overflow-hidden z-0">
+  <div class="absolute inset-0">
+    <%
+      # Better distribution across the screen
+      positions = [
+        { left: 5, top: 10 },    # top left
+        { left: 85, top: 8 },    # top right
+        { left: 15, top: 45 },   # middle left
+        { left: 75, top: 50 },   # middle right
+        { left: 10, top: 80 },   # bottom left
+        { left: 80, top: 85 },   # bottom right
+      ]
+    %>
+    <% @personas.each_with_index do |persona, index| %>
+      <% if persona.avatar_url.present? && positions[index] %>
+        <% pos = positions[index] %>
+        <!-- Floating avatar bubbles -->
+        <div class="absolute rounded-full overflow-hidden shadow-2xl"
+             style="
+               width: <%= [100, 120, 140, 110, 130, 115][index] %>px;
+               height: <%= [100, 120, 140, 110, 130, 115][index] %>px;
+               left: <%= pos[:left] %>%;
+               top: <%= pos[:top] %>%;
+               animation: float-<%= index % 3 %> <%= 15 + (index % 5) %>s ease-in-out infinite;
+               animation-delay: <%= index * 0.5 %>s;
+             ">
+          <%= image_tag persona.avatar_url, alt: "", class: "w-full h-full object-cover" %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Colorful Gradient Orbs -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+  <% colors = [
+    ['#9333ea', '#ec4899'], # purple to pink
+    ['#3b82f6', '#8b5cf6'], # blue to purple
+    ['#06b6d4', '#3b82f6'], # cyan to blue
+    ['#f59e0b', '#ef4444'], # amber to red
+    ['#10b981', '#06b6d4'], # green to cyan
+    ['#ec4899', '#f59e0b'], # pink to amber
+  ] %>
+  <% colors.each_with_index do |(color1, color2), index| %>
+    <div class="absolute rounded-full blur-3xl mix-blend-multiply"
+         style="
+           width: <%= [200, 300, 250, 350][index % 4] %>px;
+           height: <%= [200, 300, 250, 350][index % 4] %>px;
+           background: radial-gradient(circle, <%= color1 %>, <%= color2 %>);
+           left: <%= (index * 19 + 10) % 85 %>%;
+           top: <%= (index * 31 + 5) % 75 %>%;
+           opacity: 0.15;
+           animation: pulse-glow <%= 8 + (index % 4) %>s ease-in-out infinite alternate;
+           animation-delay: <%= index * 0.7 %>s;
+         ">
+    </div>
+  <% end %>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
 
   <!-- Search Bar -->
-  <div class="mb-8" data-controller="search">
+  <div class="mb-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-6" data-controller="search">
     <%= form_with url: news_stories_path, method: :get, class: "relative", data: { turbo_frame: "news_stories", search_target: "form", action: "turbo:submit-end->search#hideLoader" } do |f| %>
       <div class="relative">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -14,7 +74,7 @@
         <%= f.text_field :q,
             value: @query,
             placeholder: "Search stories by headline, source, or category...",
-            class: "block w-full pl-12 pr-32 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200",
+            class: "block w-full pl-12 pr-32 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white",
             autocomplete: "off",
             data: { search_target: "input", action: "input->search#search" } %>
         <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-2">

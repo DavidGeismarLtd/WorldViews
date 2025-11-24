@@ -3,6 +3,7 @@ class NewsStoriesController < ApplicationController
     @query = params[:q]
     @pagy, @news_stories = pagy(NewsStory.active.search(@query).recent, items: 5)
     @featured_stories = NewsStory.active.featured.recent.limit(3)
+    @personas = Persona.official.active.ordered
 
     respond_to do |format|
       format.html do
