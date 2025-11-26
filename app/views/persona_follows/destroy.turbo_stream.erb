@@ -1,0 +1,9 @@
+<%= turbo_stream.replace "follow_button_#{@persona.id}" do %>
+  <% if params[:from] == 'show' %>
+    <%= render 'personas/follow_button_show', persona: @persona %>
+  <% elsif params[:from] == 'interpretation' %>
+    <%= render 'personas/follow_button_interpretation', persona: @persona %>
+  <% else %>
+    <%= render 'personas/follow_button', persona: @persona %>
+  <% end %>
+<% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_21_210345) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_26_135155) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_21_210345) do
     t.index ["published_at"], name: "index_news_stories_on_published_at"
   end
 
+  create_table "persona_follows", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "email_notifications", default: true, null: false
+    t.datetime "last_email_sent_at"
+    t.bigint "persona_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["persona_id"], name: "index_persona_follows_on_persona_id"
+    t.index ["user_id", "persona_id"], name: "index_persona_follows_on_user_id_and_persona_id", unique: true
+    t.index ["user_id"], name: "index_persona_follows_on_user_id"
+  end
+
   create_table "personas", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "avatar_url"
@@ -89,5 +101,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_21_210345) do
 
   add_foreign_key "interpretations", "news_stories"
   add_foreign_key "interpretations", "personas"
+  add_foreign_key "persona_follows", "personas"
+  add_foreign_key "persona_follows", "users"
   add_foreign_key "personas", "users"
 end

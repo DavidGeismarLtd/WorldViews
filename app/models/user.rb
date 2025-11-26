@@ -24,4 +24,19 @@ class User < ApplicationRecord
 
   # Associations
   has_many :personas, dependent: :destroy
+  has_many :persona_follows, dependent: :destroy
+  has_many :followed_personas, through: :persona_follows, source: :persona
+
+  # Helper methods for following personas
+  def following?(persona)
+    followed_personas.include?(persona)
+  end
+
+  def follow(persona)
+    followed_personas << persona unless following?(persona)
+  end
+
+  def unfollow(persona)
+    followed_personas.delete(persona)
+  end
 end

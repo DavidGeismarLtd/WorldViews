@@ -30,9 +30,8 @@
       <h2 class="text-3xl font-bold text-gray-900 mb-6">Official Personas</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% @official_personas.each do |persona| %>
-        <%= link_to persona_path(persona), class: "block group" do %>
-          <div class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:scale-105 border-2 border-transparent hover:border-opacity-50" style="border-color: <%= persona.color_primary %>;">
-
+        <div class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent" style="border-color: <%= persona.color_primary %>;">
+          <%= link_to persona_path(persona), class: "block group" do %>
             <!-- Avatar Section - The Star! -->
             <div class="relative pt-8 pb-4 px-6" style="background: linear-gradient(135deg, <%= persona.color_primary %>15 0%, <%= persona.color_secondary %>15 100%);">
               <div class="flex justify-center">
@@ -51,7 +50,7 @@
             </div>
 
             <!-- Card Body -->
-            <div class="pt-6 pb-8 px-6 text-center">
+            <div class="pt-6 pb-4 px-6 text-center">
               <h2 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-opacity-80 transition-colors" style="color: <%= persona.color_primary %>;">
                 <%= persona.name %>
               </h2>
@@ -86,8 +85,19 @@
                 </span>
               </div>
             </div>
+          <% end %>
+
+          <!-- Follow Button (outside the link) -->
+          <div class="px-6 pb-6">
+            <% if user_signed_in? %>
+              <%= render 'personas/follow_button', persona: persona %>
+            <% else %>
+              <%= link_to new_user_session_path, data: { turbo_frame: "_top" }, class: "block w-full px-4 py-2 bg-gray-100 text-gray-600 rounded-lg font-semibold text-center hover:bg-gray-200 transition-colors" do %>
+                Sign in to Follow
+              <% end %>
+            <% end %>
           </div>
-        <% end %>
+        </div>
       <% end %>
       </div>
     </div>
@@ -106,9 +116,8 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <% @custom_personas.each do |persona| %>
-            <%= link_to persona_path(persona), class: "block group" do %>
-              <div class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:scale-105 border-2 border-transparent hover:border-opacity-50" style="border-color: <%= persona.color_primary %>;">
-
+            <div class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent" style="border-color: <%= persona.color_primary %>;">
+              <%= link_to persona_path(persona), class: "block group" do %>
                 <!-- Avatar Section -->
                 <div class="relative pt-8 pb-4 px-6" style="background: linear-gradient(135deg, <%= persona.color_primary %>15 0%, <%= persona.color_secondary %>15 100%);">
                   <div class="flex justify-center">
@@ -134,7 +143,7 @@
                 </div>
 
                 <!-- Card Body -->
-                <div class="pt-6 pb-8 px-6 text-center">
+                <div class="pt-6 pb-4 px-6 text-center">
                   <h2 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-opacity-80 transition-colors" style="color: <%= persona.color_primary %>;">
                     <%= persona.name %>
                   </h2>
@@ -169,8 +178,13 @@
                     </span>
                   </div>
                 </div>
+              <% end %>
+
+              <!-- Follow Button (outside the link) -->
+              <div class="px-6 pb-6">
+                <%= render 'personas/follow_button', persona: persona %>
               </div>
-            <% end %>
+            </div>
           <% end %>
         </div>
       </div>

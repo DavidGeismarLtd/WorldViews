@@ -34,6 +34,8 @@ class Persona < ApplicationRecord
   belongs_to :user, optional: true
   has_many :interpretations, dependent: :destroy
   has_many :news_stories, through: :interpretations
+  has_many :persona_follows, dependent: :destroy
+  has_many :followers, through: :persona_follows, source: :user
 
   # Validations
   validates :name, presence: true
@@ -91,6 +93,10 @@ class Persona < ApplicationRecord
       .limit(1)
       .pluck("news_stories.category")
       .first
+  end
+
+  def followers_count
+    followers.count
   end
 
   # Authorization methods

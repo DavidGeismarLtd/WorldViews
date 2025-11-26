@@ -1,0 +1,30 @@
+<%= @persona.name %>'s Daily Takes - <%= @date.strftime('%B %d, %Y') %>
+================================================================================
+
+Hi <%= @user.email.split('@').first.capitalize %>,
+
+Here are <%= @persona.name %>'s latest hot takes on today's news:
+
+<% if @interpretations.any? %>
+<% @interpretations.each do |interpretation| %>
+--------------------------------------------------------------------------------
+<%= interpretation.news_story.headline %>
+<%= interpretation.news_story.source %> • <%= interpretation.news_story.published_at.strftime('%B %d, %Y') %>
+
+<%= interpretation.content %>
+
+Read more: <%= news_story_url(interpretation.news_story) %>
+
+<% end %>
+<% else %>
+No new takes today. Check back tomorrow!
+<% end %>
+
+================================================================================
+You're receiving this because you follow <%= @persona.name %> on WorldViews.
+
+Unfollow: <%= persona_follow_url(@persona) %>
+View all personas: <%= personas_url %>
+
+"The news, seen through everyone's delusions"
+
