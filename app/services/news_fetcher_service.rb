@@ -68,7 +68,6 @@ class NewsFetcherService
       pageSize: limit
     })
 
-    binding.pry
     if response.success?
       parse_response(response)
     else
