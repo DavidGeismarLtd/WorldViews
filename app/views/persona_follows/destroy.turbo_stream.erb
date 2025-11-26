@@ -7,3 +7,10 @@
     <%= render 'personas/follow_button', persona: @persona %>
   <% end %>
 <% end %>
+
+<%= turbo_stream.append "toast-container" do %>
+  <%= render 'shared/toast',
+      message: "You've unfollowed #{@persona.name}. No more daily emails.",
+      type: 'info',
+      icon: '👋' %>
+<% end %>

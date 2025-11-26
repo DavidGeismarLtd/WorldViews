@@ -1,0 +1,25 @@
+<%# Toast notification component
+  Usage: render 'shared/toast', message: 'Success!', type: 'success', icon: '✅'
+  Types: success, error, info
+%>
+<div data-controller="toast"
+     data-toast-message-value="<%= message %>"
+     data-toast-type-value="<%= type %>"
+     data-toast-duration-value="<%= duration ||= 3000 %>"
+     class="mx-auto mt-4 px-6 py-4 rounded-xl shadow-2xl transition-all duration-300 opacity-0 translate-y-2 flex items-center space-x-3 text-white min-w-[300px] max-w-md pointer-events-auto">
+
+  <!-- Icon -->
+  <% if local_assigns[:icon] %>
+    <span class="text-2xl flex-shrink-0"><%= icon %></span>
+  <% end %>
+
+  <!-- Message -->
+  <span class="font-semibold flex-1"><%= message %></span>
+
+  <!-- Close button -->
+  <button data-action="click->toast#dismiss" class="flex-shrink-0 hover:opacity-75 transition-opacity">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>
+  </button>
+</div>

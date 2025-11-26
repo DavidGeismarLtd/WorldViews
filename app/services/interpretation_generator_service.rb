@@ -62,8 +62,12 @@ class InterpretationGeneratorService
       return interpretation
     end
 
-    # Fetch full article content
-    full_content = @news_story.fetch_full_content
+    # Fetch full article content only if not already present
+    full_content = if @news_story.full_content.present? && !@news_story.full_content.include?("[+")
+      @news_story.full_content
+    else
+      @news_story.fetch_full_content
+    end
 
     # Generate detailed analysis using LLM
     result = @llm_client.chat(

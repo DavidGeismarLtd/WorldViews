@@ -91,6 +91,9 @@ class NewsFetcherService
         if story.save
           Rails.logger.info "  ✓ NEW: #{story.headline[0..60]}..."
           new_stories << story
+
+          # Fetch full content for new stories
+          fetch_full_content_for_story(story)
         else
           Rails.logger.error "  ✗ FAILED: #{story.errors.full_messages.join(', ')}"
         end
@@ -99,6 +102,9 @@ class NewsFetcherService
         if story.save
           Rails.logger.info "  ↻ UPDATED: #{story.headline[0..60]}..."
           updated_stories << story
+
+          # Fetch full content for updated stories if not already present
+          fetch_full_content_for_story(story) if story.full_content.blank? || story.full_content.include?("[+")
         end
       else
         Rails.logger.debug "  ⊙ SKIPPED: #{story.headline[0..60]}..."
@@ -300,5 +306,17 @@ class NewsFetcherService
     else
       "general"
     end
+  end
+
+  def fetch_full_content_for_story(story)
+    # Skip if full content already exists and is complete
+    return if story.full_content.present? && !story.full_content.include?("[+")
+
+    Rails.logger.info "  📄 Fetching full content for: #{story.headline[0..60]}..."
+
+    # Fetch full content (this will trigger ArticleScraperService)
+    story.fetch_full_content
+  rescue StandardError => e
+    Rails.logger.error "  ❌ Failed to fetch full content: #{e.message}"
   end
 end

@@ -1,0 +1,28 @@
+🚨 ARTICLE SCRAPER ALERT
+========================
+
+⚠️  Scraping Failed
+
+The article scraper was unable to extract content from the following URL.
+The current selectors did not match any content on this page.
+
+DETAILS
+-------
+Domain:    <%= @domain %>
+Timestamp: <%= @timestamp.strftime("%B %d, %Y at %I:%M %p %Z") %>
+
+ARTICLE URL
+-----------
+<%= @url %>
+
+NEXT STEPS
+----------
+1. Visit the URL and inspect the page structure
+2. Identify the correct CSS selector for the article content
+3. Add the selector to `article_selectors` array in `ArticleScraperService`
+4. Test the scraper with the updated selectors
+
+---
+Worldviews Article Scraper Alert System
+This is an automated alert from your Worldviews application
+

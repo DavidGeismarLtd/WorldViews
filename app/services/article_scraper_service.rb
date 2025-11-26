@@ -21,19 +21,21 @@ class ArticleScraperService
     return nil unless response.success?
 
     doc = Nokogiri::HTML(response.body)
-    
+
     # Try multiple strategies to extract article content
     content = extract_article_content(doc)
-    
+
     if content.present?
       Rails.logger.info "  ✅ Scraped #{content.length} characters"
       content
     else
       Rails.logger.warn "  ⚠️  Could not extract article content"
+      send_scraping_failure_alert
       nil
     end
   rescue StandardError => e
     Rails.logger.error "  ❌ Scraping failed: #{e.message}"
+    send_scraping_failure_alert
     nil
   end
 
@@ -78,5 +80,14 @@ class ArticleScraperService
 
     article_paragraphs.join("\n\n")
   end
-end
 
+  def send_scraping_failure_alert
+    # Extract domain from URL for better context
+    domain = URI.parse(@url).host rescue @url
+
+    # Send alert email in background to avoid blocking
+    ScraperAlertMailer.scraping_failed(@url, domain).deliver_later
+  rescue StandardError => e
+    Rails.logger.error "  ❌ Failed to send scraper alert email: #{e.message}"
+  end
+end
