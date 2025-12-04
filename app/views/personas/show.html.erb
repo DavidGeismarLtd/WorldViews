@@ -29,9 +29,21 @@
             </span>
           <% end %>
         </h1>
-        <p class="text-xl sm:text-2xl text-white/90 italic max-w-2xl mx-auto mb-8">
+        <p class="text-xl sm:text-2xl text-white/90 italic max-w-2xl mx-auto mb-4">
           "<%= @persona.description %>"
         </p>
+
+        <!-- Twitter Handle -->
+        <% if @persona.twitter_enabled? && @persona.twitter_handle.present? %>
+          <div class="flex justify-center mb-8">
+            <%= link_to "https://twitter.com/#{@persona.twitter_handle}", target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-full font-semibold transition-all duration-300 border border-white/30 hover:border-white/50" do %>
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              @<%= @persona.twitter_handle %>
+            <% end %>
+          </div>
+        <% end %>
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">

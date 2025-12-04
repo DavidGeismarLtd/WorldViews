@@ -91,41 +91,17 @@ class XPosterService
   private
 
   def build_tweet(news_story, interpretation)
-    # Format: "[Persona emoji] [Hot take] [Link to full article on your site]"
-    emoji = persona_emoji
-    take = truncate_for_tweet(interpretation.content)
+    # Use TweetGeneratorService to create a catchy, tweet-vibe version
+    tweet_generator = TweetGeneratorService.new(
+      persona: @persona,
+      interpretation: interpretation,
+      news_story: news_story
+    )
+
+    tweet_text = tweet_generator.generate_tweet
     url = story_url(news_story)
 
-    "#{emoji} #{take}\n\n#{url}"
-  end
-
-  def truncate_for_tweet(text)
-    # Twitter counts URLs as 23 characters
-    # Leave room for emoji (2), newlines (2), URL (23), and buffer (10)
-    max_length = 280 - 37
-
-    # Remove any existing newlines and extra whitespace
-    cleaned_text = text.gsub(/\s+/, " ").strip
-
-    if cleaned_text.length > max_length
-      # Truncate and add ellipsis
-      cleaned_text[0...max_length].strip + "..."
-    else
-      cleaned_text
-    end
-  end
-
-  def persona_emoji
-    # Map personas to emojis for brand consistency
-    emoji_map = {
-      "revolutionary" => "✊",
-      "tech-bro" => "🚀",
-      "conspiracy-theorist" => "👁️",
-      "centrist" => "⚖️",
-      "doomer" => "💀",
-      "optimist" => "🌟"
-    }
-    emoji_map[@persona.slug] || "💭"
+    "#{tweet_text}\n\n#{url}"
   end
 
   def story_url(news_story)
