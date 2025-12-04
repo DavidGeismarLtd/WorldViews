@@ -3,7 +3,7 @@ class PostDailyPersonaTweetJob < ApplicationJob
   queue_as :default
 
   # Top 3 most distinctive personas for daily tweeting
-  TOP_PERSONAS = %w[revolutionary tech-bro conspiracy-theorist].freeze
+  TOP_PERSONAS = %w[revolutionary moderate patriot].freeze
 
   def perform
     Rails.logger.info "🐦 Starting daily persona tweet job..."
@@ -96,4 +96,3 @@ class PostDailyPersonaTweetJob < ApplicationJob
     { success: false, persona: slug, error: e.message }
   end
 end
-
