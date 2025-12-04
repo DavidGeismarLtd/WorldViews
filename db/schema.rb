@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_26_135155) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_04_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -74,17 +74,43 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_26_135155) do
     t.datetime "created_at", null: false
     t.text "description"
     t.integer "display_order", default: 0
+    t.datetime "last_tweet_at"
     t.string "name", null: false
     t.boolean "official", default: false, null: false
     t.string "slug", null: false
     t.text "system_prompt", null: false
+    t.string "twitter_access_token"
+    t.string "twitter_access_token_secret"
+    t.string "twitter_api_key"
+    t.string "twitter_api_secret"
+    t.boolean "twitter_enabled", default: false, null: false
+    t.string "twitter_handle"
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.string "visibility", default: "public", null: false
     t.index ["active"], name: "index_personas_on_active"
     t.index ["display_order"], name: "index_personas_on_display_order"
     t.index ["slug"], name: "index_personas_on_slug", unique: true
+    t.index ["twitter_enabled"], name: "index_personas_on_twitter_enabled"
+    t.index ["twitter_handle"], name: "index_personas_on_twitter_handle", unique: true
     t.index ["user_id"], name: "index_personas_on_user_id"
+  end
+
+  create_table "tweet_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.bigint "news_story_id", null: false
+    t.bigint "persona_id", null: false
+    t.datetime "posted_at"
+    t.boolean "success", default: false, null: false
+    t.string "tweet_id"
+    t.text "tweet_text"
+    t.datetime "updated_at", null: false
+    t.index ["news_story_id"], name: "index_tweet_logs_on_news_story_id"
+    t.index ["persona_id"], name: "index_tweet_logs_on_persona_id"
+    t.index ["posted_at"], name: "index_tweet_logs_on_posted_at"
+    t.index ["success"], name: "index_tweet_logs_on_success"
+    t.index ["tweet_id"], name: "index_tweet_logs_on_tweet_id", unique: true
   end
 
   create_table "users", force: :cascade do |t|
@@ -104,4 +130,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_26_135155) do
   add_foreign_key "persona_follows", "personas"
   add_foreign_key "persona_follows", "users"
   add_foreign_key "personas", "users"
+  add_foreign_key "tweet_logs", "news_stories"
+  add_foreign_key "tweet_logs", "personas"
 end

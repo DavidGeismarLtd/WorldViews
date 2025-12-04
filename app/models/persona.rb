@@ -2,28 +2,37 @@
 #
 # Table name: personas
 #
-#  id              :bigint           not null, primary key
-#  active          :boolean          default(TRUE), not null
-#  avatar_url      :string
-#  color_primary   :string
-#  color_secondary :string
-#  description     :text
-#  display_order   :integer          default(0)
-#  name            :string           not null
-#  official        :boolean          default(FALSE), not null
-#  slug            :string           not null
-#  system_prompt   :text             not null
-#  visibility      :string           default("public"), not null
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  user_id         :bigint
+#  id                          :bigint           not null, primary key
+#  active                      :boolean          default(TRUE), not null
+#  avatar_url                  :string
+#  color_primary               :string
+#  color_secondary             :string
+#  description                 :text
+#  display_order               :integer          default(0)
+#  last_tweet_at               :datetime
+#  name                        :string           not null
+#  official                    :boolean          default(FALSE), not null
+#  slug                        :string           not null
+#  system_prompt               :text             not null
+#  twitter_access_token        :string
+#  twitter_access_token_secret :string
+#  twitter_api_key             :string
+#  twitter_api_secret          :string
+#  twitter_enabled             :boolean          default(FALSE), not null
+#  twitter_handle              :string
+#  visibility                  :string           default("public"), not null
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  user_id                     :bigint
 #
 # Indexes
 #
-#  index_personas_on_active         (active)
-#  index_personas_on_display_order  (display_order)
-#  index_personas_on_slug           (slug) UNIQUE
-#  index_personas_on_user_id        (user_id)
+#  index_personas_on_active          (active)
+#  index_personas_on_display_order   (display_order)
+#  index_personas_on_slug            (slug) UNIQUE
+#  index_personas_on_twitter_enabled (twitter_enabled)
+#  index_personas_on_twitter_handle  (twitter_handle) UNIQUE
+#  index_personas_on_user_id         (user_id)
 #
 # Foreign Keys
 #
@@ -36,6 +45,7 @@ class Persona < ApplicationRecord
   has_many :news_stories, through: :interpretations
   has_many :persona_follows, dependent: :destroy
   has_many :followers, through: :persona_follows, source: :user
+  has_many :tweet_logs, dependent: :destroy
 
   # Validations
   validates :name, presence: true
@@ -53,8 +63,9 @@ class Persona < ApplicationRecord
   scope :ordered, -> { order(display_order: :asc, created_at: :asc) }
   scope :official, -> { where(official: true) }
   scope :custom, -> { where(official: false) }
-  scope :public_personas, -> { where(visibility: 'public') }
+  scope :public_personas, -> { where(visibility: "public") }
   scope :by_user, ->(user) { where(user: user) }
+  scope :twitter_enabled, -> { where(twitter_enabled: true) }
 
   # Instance methods
   def to_param
@@ -97,6 +108,39 @@ class Persona < ApplicationRecord
 
   def followers_count
     followers.count
+  end
+
+  # Twitter methods
+  def can_tweet_today?
+    return false unless twitter_enabled?
+    return true if last_tweet_at.nil?
+
+    # Only tweet once per day
+    last_tweet_at < 1.day.ago
+  end
+
+  def twitter_url
+    return nil unless twitter_handle.present?
+    "https://twitter.com/#{twitter_handle}"
+  end
+
+  def has_twitter_credentials?
+    # Check if persona has all required Twitter API credentials
+    # Can be stored in database or fall back to ENV variables
+    has_api_key = twitter_api_key.present? || ENV["X_#{slug.upcase.gsub('-', '_')}_API_KEY"].present?
+    has_api_secret = twitter_api_secret.present? || ENV["X_#{slug.upcase.gsub('-', '_')}_API_SECRET"].present?
+    has_access_token = twitter_access_token.present? || ENV["X_#{slug.upcase.gsub('-', '_')}_ACCESS_TOKEN"].present?
+    has_access_secret = twitter_access_token_secret.present? || ENV["X_#{slug.upcase.gsub('-', '_')}_ACCESS_TOKEN_SECRET"].present?
+
+    has_api_key && has_api_secret && has_access_token && has_access_secret
+  end
+
+  def tweets_count
+    tweet_logs.successful.count
+  end
+
+  def tweets_this_month
+    tweet_logs.successful.this_month.count
   end
 
   # Authorization methods

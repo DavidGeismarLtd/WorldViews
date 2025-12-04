@@ -17,3 +17,7 @@ production:
   send_persona_daily_digests:
     class: SendPersonaDailyDigestsJob
     schedule: every day at 8am
+
+  post_daily_persona_tweets:
+    class: PostDailyPersonaTweetJob
+    schedule: every day at 9am
