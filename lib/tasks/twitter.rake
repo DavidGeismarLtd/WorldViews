@@ -10,7 +10,7 @@ namespace :twitter do
     puts ""
 
     # Top 3 personas that will tweet daily
-    top_personas = %w[revolutionary tech-bro conspiracy-theorist]
+    top_personas = %w[revolutionary moderate patriot]
 
     Persona.official.active.each do |persona|
       puts ""
