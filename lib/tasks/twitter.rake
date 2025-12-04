@@ -152,5 +152,101 @@ namespace :twitter do
     puts "🐦 Running daily tweet job..."
     PostDailyPersonaTweetJob.new.perform
   end
-end
 
+  desc "Update personas with Twitter credentials from environment variables"
+  task update_credentials: :environment do
+    puts "🔧 Updating Twitter credentials from environment variables..."
+    puts "=" * 60
+    puts ""
+
+    # Configuration for each persona
+    personas_config = {
+      'revolutionary' => {
+        handle: 'Worldviews32376',
+        api_key_env: 'X_REVOLUTIONARY_API_KEY',
+        api_secret_env: 'X_REVOLUTIONARY_API_SECRET',
+        access_token_env: 'X_REVOLUTIONARY_ACCESS_TOKEN',
+        access_token_secret_env: 'X_REVOLUTIONARY_ACCESS_TOKEN_SECRET'
+      },
+      'moderate' => {
+        handle: 'TModerate',
+        api_key_env: 'X_MODERATE_API_KEY',
+        api_secret_env: 'X_MODERATE_API_SECRET',
+        access_token_env: 'X_MODERATE_ACCESS_TOKEN',
+        access_token_secret_env: 'X_MODERATE_ACCESS_TOKEN_SECRET'
+      },
+      'patriot' => {
+        handle: 'thePatriotViews',
+        api_key_env: 'X_PATRIOT_API_KEY',
+        api_secret_env: 'X_PATRIOT_API_SECRET',
+        access_token_env: 'X_PATRIOT_ACCESS_TOKEN',
+        access_token_secret_env: 'X_PATRIOT_ACCESS_TOKEN_SECRET'
+      }
+    }
+
+    updated_count = 0
+    failed_count = 0
+
+    personas_config.each do |slug, config|
+      persona = Persona.find_by(slug: slug)
+
+      unless persona
+        puts "⚠️  Persona '#{slug}' not found, skipping..."
+        failed_count += 1
+        next
+      end
+
+      # Get credentials from environment
+      api_key = ENV[config[:api_key_env]]
+      api_secret = ENV[config[:api_secret_env]]
+      access_token = ENV[config[:access_token_env]]
+      access_token_secret = ENV[config[:access_token_secret_env]]
+
+      # Check if all credentials are present
+      missing = []
+      missing << config[:api_key_env] if api_key.blank?
+      missing << config[:api_secret_env] if api_secret.blank?
+      missing << config[:access_token_env] if access_token.blank?
+      missing << config[:access_token_secret_env] if access_token_secret.blank?
+
+      if missing.any?
+        puts "⚠️  #{persona.name}: Missing environment variables: #{missing.join(', ')}"
+        failed_count += 1
+        next
+      end
+
+      # Update persona
+      persona.update!(
+        twitter_api_key: api_key,
+        twitter_api_secret: api_secret,
+        twitter_access_token: access_token,
+        twitter_access_token_secret: access_token_secret,
+        twitter_enabled: true,
+        twitter_handle: config[:handle]
+      )
+
+      puts "✅ #{persona.name} (@#{config[:handle]})"
+      puts "   API Key: #{api_key[0..10]}..."
+      puts "   API Secret: #{api_secret[0..10]}..."
+      puts "   Access Token: #{access_token[0..20]}..."
+      puts "   Access Token Secret: #{access_token_secret[0..10]}..."
+      puts "   Has all credentials: #{persona.has_twitter_credentials?}"
+      puts ""
+
+      updated_count += 1
+    end
+
+    puts "=" * 60
+    puts "✅ Update complete!"
+    puts "   Updated: #{updated_count} personas"
+    puts "   Failed: #{failed_count} personas" if failed_count > 0
+    puts ""
+
+    if updated_count > 0
+      puts "Configured personas:"
+      Persona.twitter_enabled.each do |p|
+        puts "  • #{p.name} (@#{p.twitter_handle})"
+      end
+    end
+  end
+end
