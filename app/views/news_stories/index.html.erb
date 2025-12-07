@@ -77,6 +77,7 @@
             class: "block w-full pl-12 pr-32 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white",
             autocomplete: "off",
             data: { search_target: "input", action: "input->search#search" } %>
+        <%= f.hidden_field :category, value: params[:category] %>
         <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-2">
           <!-- Loader -->
           <div data-search-target="loader" class="hidden">
@@ -85,7 +86,7 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </div>
-          <% if @query.present? %>
+          <% if @query.present? || @category.present? %>
             <%= link_to news_stories_path, class: "px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium" do %>
               Clear
             <% end %>
@@ -103,6 +104,47 @@
     <% end %>
   </div>
 
+  <!-- Category Filter Pills -->
+  <div class="mb-8">
+    <div class="flex flex-wrap gap-3 items-center">
+      <span class="text-sm font-semibold text-gray-700">📂 Categories:</span>
+
+      <!-- All Categories -->
+      <%= link_to news_stories_path(q: @query),
+          class: "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 #{@category.blank? ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'}" do %>
+        All
+      <% end %>
+
+      <!-- Individual Categories -->
+      <% @categories.each do |category| %>
+        <%= link_to news_stories_path(category: category, q: @query),
+            class: "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 capitalize #{@category == category ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'}" do %>
+          <%= case category
+              when 'general' then '📰'
+              when 'technology' then '💻'
+              when 'business' then '💼'
+              when 'science' then '🔬'
+              when 'health' then '🏥'
+              when 'sports' then '⚽'
+              when 'entertainment' then '🎬'
+              else '📰'
+              end %>
+          <%= category %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <!-- Active Filter Display -->
+    <% if @category.present? %>
+      <div class="mt-3 text-sm text-gray-600">
+        Showing <span class="font-semibold capitalize"><%= @category %></span> stories
+        <% if @query.present? %>
+          matching <span class="font-semibold">"<%= @query %>"</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
   <!-- All Stories -->
   <div>
     <h3 class="text-2xl font-bold text-gray-900 mb-6">
@@ -114,7 +156,7 @@
     </h3>
 
     <div data-controller="infinite-scroll">
-      <%= render partial: "news_stories_frame", locals: { news_stories: @news_stories, pagy: @pagy, query: @query } %>
+      <%= render partial: "news_stories_frame", locals: { news_stories: @news_stories, pagy: @pagy, query: @query, category: @category } %>
     </div>
   </div>
 </div>

@@ -21,18 +21,6 @@
         </div>
       </div>
 
-      <!-- Value Proposition -->
-      <div class="max-w-4xl mx-auto mb-10">
-        <p class="text-xl sm:text-2xl text-white/95 font-medium mb-6 leading-relaxed">
-          Ever wonder why your uncle and your college roommate read the <span class="font-bold text-yellow-300">same article</span>
-          and come away with <span class="font-bold text-yellow-300">completely opposite conclusions?</span>
-        </p>
-        <p class="text-lg sm:text-xl text-white/85 leading-relaxed">
-          Watch as <span class="font-semibold">six wildly different personas</span> interpret the same news story.
-          It's like a political Rorschach test, except everyone's wrong in their own special way.
-        </p>
-      </div>
-
       <!-- CTA Buttons -->
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
         <%= link_to news_stories_path, class: "inline-flex items-center px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300" do %>
@@ -72,6 +60,48 @@
 </div>
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+  <!-- Category Filter Section -->
+  <div class="mb-16">
+    <div class="text-center mb-8">
+      <h3 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+        📂 Browse by Category
+      </h3>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Explore news stories across different topics
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
+      <% @categories.each do |category| %>
+        <%= link_to news_stories_path(category: category), class: "group" do %>
+          <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 text-center transform hover:-translate-y-1">
+            <!-- Category Icon -->
+            <div class="text-4xl mb-3">
+              <%= case category
+                  when 'general' then '📰'
+                  when 'technology' then '💻'
+                  when 'business' then '💼'
+                  when 'science' then '🔬'
+                  when 'health' then '🏥'
+                  when 'sports' then '⚽'
+                  when 'entertainment' then '🎬'
+                  else '📰'
+                  end %>
+            </div>
+            <!-- Category Name -->
+            <div class="font-bold text-gray-900 capitalize group-hover:text-purple-600 transition-colors">
+              <%= category %>
+            </div>
+            <!-- Story Count -->
+            <div class="text-xs text-gray-500 mt-1">
+              <%= NewsStory.active.by_category(category).count %> stories
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
 
   <!-- Featured Personas Section -->
   <div class="mb-16">

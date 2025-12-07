@@ -17,11 +17,12 @@ class NewsFetcherService
       return { new: [], updated: [], skipped: [], total: 0 }
     end
 
-    process_and_store_articles(articles)
+    process_and_store_articles(articles, category: category)
   end
 
   # Fetch news since last successful fetch
-  def fetch_latest_news(categories: [ "general", "technology", "business" ], limit_per_category: 20)
+  # Available categories: business, entertainment, general, health, science, sports, technology
+  def fetch_latest_news(categories: [ "general", "technology", "business", "science", "health", "sports", "entertainment" ], limit_per_category: 20)
     last_fetch = NewsStory.maximum(:published_at) || 7.days.ago
     Rails.logger.info "📰 Fetching news since #{last_fetch}"
 
@@ -39,7 +40,7 @@ class NewsFetcherService
 
       Rails.logger.info "  📊 Found #{new_articles.count} new articles (out of #{articles.count} total)"
 
-      results = process_and_store_articles(new_articles)
+      results = process_and_store_articles(new_articles, category: category)
 
       # Merge results
       all_results[:new] += results[:new]
@@ -78,12 +79,15 @@ class NewsFetcherService
 
   private
 
-  def process_and_store_articles(articles)
+  def process_and_store_articles(articles, category:)
     new_stories = []
     updated_stories = []
     skipped_stories = []
 
     articles.each do |article_data|
+      # Use the category from the API request, not inferred from source
+      article_data[:category] = category
+
       story = NewsStory.find_or_initialize_by(external_id: article_data[:external_id])
 
       if story.new_record?
@@ -272,7 +276,8 @@ class NewsFetcherService
         source_url: article["url"],
         image_url: article["urlToImage"],
         published_at: article["publishedAt"],
-        category: determine_category(article),
+        # Category will be set by process_and_store_articles based on API request
+        category: nil,
         metadata: {
           author: article["author"],
           source_id: article.dig("source", "id")
@@ -287,24 +292,6 @@ class NewsFetcherService
       Digest::MD5.hexdigest(article["url"])
     else
       Digest::MD5.hexdigest("#{article['title']}-#{article['publishedAt']}")
-    end
-  end
-
-  def determine_category(article)
-    # NewsAPI doesn't always return category, so we'll infer or use default
-    source_name = article.dig("source", "name")&.downcase || ""
-
-    case source_name
-    when /tech|wired|verge|ars/
-      "technology"
-    when /business|financial|bloomberg|wsj/
-      "business"
-    when /cnn|fox|msnbc|politico/
-      "politics"
-    when /science|nature|scientific/
-      "science"
-    else
-      "general"
     end
   end
 

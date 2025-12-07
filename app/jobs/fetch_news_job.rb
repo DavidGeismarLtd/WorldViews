@@ -3,6 +3,7 @@ class FetchNewsJob < ApplicationJob
   queue_as :default
 
   # Fetch latest news across multiple categories (smart sync)
+  # Available categories: business, entertainment, general, health, science, sports, technology
   def perform(mode: :latest, categories: nil, limit_per_category: 20)
     Rails.logger.info "🔄 Starting FetchNewsJob (mode: #{mode})"
 
@@ -11,7 +12,8 @@ class FetchNewsJob < ApplicationJob
     results = case mode
     when :latest
       # Smart mode: fetch only new stories since last fetch
-      categories ||= %w[general technology business]
+      # Fetch from all available NewsAPI categories by default
+      categories ||= %w[general technology business science health sports entertainment]
       service.fetch_latest_news(categories: categories, limit_per_category: limit_per_category)
     when :single_category
       # Legacy mode: fetch single category

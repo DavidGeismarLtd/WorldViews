@@ -4,16 +4,24 @@
   </div>
 
   <div id="pagination_container">
-    <%= render partial: "pagination", locals: { pagy: pagy, query: query } %>
+    <%= render partial: "pagination", locals: { pagy: pagy, query: query, category: category } %>
   </div>
 <% else %>
   <!-- Empty State -->
   <div class="text-center py-12">
-    <% if defined?(query) && query.present? %>
+    <% if (defined?(query) && query.present?) || (defined?(category) && category.present?) %>
       <div class="text-6xl mb-4">🔍</div>
       <h3 class="text-2xl font-bold text-gray-900 mb-2">No stories found</h3>
-      <p class="text-gray-600 mb-4">We couldn't find any stories matching "<%= query %>"</p>
-      <%= link_to "Clear search", news_stories_path, class: "inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors", data: { turbo_frame: "_top" } %>
+      <p class="text-gray-600 mb-4">
+        We couldn't find any stories
+        <% if category.present? %>
+          in the <span class="font-semibold capitalize"><%= category %></span> category
+        <% end %>
+        <% if query.present? %>
+          matching "<%= query %>"
+        <% end %>
+      </p>
+      <%= link_to "Clear filters", news_stories_path, class: "inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors", data: { turbo_frame: "_top" } %>
     <% else %>
       <div class="text-6xl mb-4">📰</div>
       <h3 class="text-2xl font-bold text-gray-900 mb-2">No stories yet</h3>

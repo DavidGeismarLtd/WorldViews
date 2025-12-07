@@ -1,3 +1,8 @@
+<% content_for :head do %>
+  <!-- Twitter Widgets Script -->
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<% end %>
+
 <div class="min-h-screen bg-gray-50">
   <!-- Hero Section -->
   <div class="relative overflow-hidden" style="background: linear-gradient(135deg, <%= @persona.color_primary %> 0%, <%= @persona.color_secondary %> 100%);">
@@ -177,6 +182,41 @@
         <div class="text-gray-600 text-sm mt-1">Top Category</div>
       </div>
     </div>
+
+    <!-- Twitter Timeline Section -->
+    <% if @persona.twitter_enabled? && @persona.twitter_handle.present? %>
+      <div class="bg-white rounded-2xl shadow-lg p-8 mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+          <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 24 24" style="color: <%= @persona.color_primary %>;">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+          Latest Tweets
+        </h2>
+
+        <div class="flex flex-col items-center">
+          <!-- Twitter Timeline Embed -->
+          <div class="w-full max-w-xl">
+            <a class="twitter-timeline"
+               data-height="600"
+               data-theme="light"
+               data-chrome="noheader nofooter noborders"
+               href="https://twitter.com/<%= @persona.twitter_handle %>?ref_src=twsrc%5Etfw">
+              Tweets by @<%= @persona.twitter_handle %>
+            </a>
+          </div>
+
+          <!-- View on Twitter Button -->
+          <div class="mt-6">
+            <%= link_to "https://twitter.com/#{@persona.twitter_handle}", target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-6 py-3 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105", style: "background: linear-gradient(135deg, #{@persona.color_primary} 0%, #{@persona.color_secondary} 100%);" do %>
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              View Full Profile on 𝕏
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
 
     <!-- Recent Interpretations Section -->
     <div class="bg-white rounded-2xl shadow-lg p-8">

@@ -26,11 +26,11 @@ RSpec.describe FetchNewsJob, type: :job do
         allow(service).to receive(:fetch_latest_news).and_return(results)
       end
 
-      it 'calls fetch_latest_news on the service' do
+      it 'calls fetch_latest_news on the service with all categories' do
         described_class.new.perform(mode: :latest)
 
         expect(service).to have_received(:fetch_latest_news).with(
-          categories: %w[general technology business],
+          categories: %w[general technology business science health sports entertainment],
           limit_per_category: 20
         )
       end

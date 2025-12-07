@@ -1,15 +1,26 @@
 class NewsStoriesController < ApplicationController
+  # All available NewsAPI categories
+  CATEGORIES = %w[general technology business science health sports entertainment].freeze
+
   def index
     @query = params[:q]
-    @pagy, @news_stories = pagy(NewsStory.active.search(@query).recent, items: 5)
+    @category = params[:category]
+
+    # Build the query
+    stories = NewsStory.active
+    stories = stories.by_category(@category) if @category.present?
+    stories = stories.search(@query)
+
+    @pagy, @news_stories = pagy(stories.recent, items: 5)
     @featured_stories = NewsStory.active.featured.recent.limit(3)
     @personas = Persona.official.active.ordered
+    @categories = CATEGORIES
 
     respond_to do |format|
       format.html do
         # For Turbo Frame requests (search), only render the frame
         if turbo_frame_request_id == "news_stories"
-          render partial: "news_stories_frame", locals: { news_stories: @news_stories, pagy: @pagy, query: @query }
+          render partial: "news_stories_frame", locals: { news_stories: @news_stories, pagy: @pagy, query: @query, category: @category }
         end
       end
       format.turbo_stream

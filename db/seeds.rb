@@ -86,7 +86,8 @@ puts "\n📰 Fetching real news stories from NewsAPI..."
 # Fetch news from multiple categories using NewsFetcherService
 service = NewsFetcherService.new
 
-categories = [ "general", "technology", "business" ]
+# All available NewsAPI categories
+categories = [ "general", "technology", "business", "science", "health", "sports", "entertainment" ]
 all_results = { new: 0, updated: 0, skipped: 0, total: 0 }
 
 categories.each do |category|

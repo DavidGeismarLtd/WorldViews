@@ -12,7 +12,28 @@
         <div class="flex-1 min-w-0">
           <!-- Meta Info -->
           <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
-            <span class="text-xs font-semibold text-gray-500 uppercase"><%= story.category %></span>
+            <!-- Category Badge -->
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold <%= case story.category
+              when 'technology' then 'bg-blue-100 text-blue-800'
+              when 'business' then 'bg-green-100 text-green-800'
+              when 'science' then 'bg-purple-100 text-purple-800'
+              when 'health' then 'bg-red-100 text-red-800'
+              when 'sports' then 'bg-orange-100 text-orange-800'
+              when 'entertainment' then 'bg-pink-100 text-pink-800'
+              else 'bg-gray-100 text-gray-800'
+              end %>">
+              <%= case story.category
+                  when 'general' then '📰'
+                  when 'technology' then '💻'
+                  when 'business' then '💼'
+                  when 'science' then '🔬'
+                  when 'health' then '🏥'
+                  when 'sports' then '⚽'
+                  when 'entertainment' then '🎬'
+                  else '📰'
+                  end %>
+              <span class="ml-1 capitalize"><%= story.category %></span>
+            </span>
             <span class="text-xs text-gray-400 hidden sm:inline">•</span>
             <span class="text-xs text-gray-500"><%= story.source %></span>
             <span class="text-xs text-gray-400 hidden sm:inline">•</span>

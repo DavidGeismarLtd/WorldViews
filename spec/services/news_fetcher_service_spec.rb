@@ -192,11 +192,18 @@ RSpec.describe NewsFetcherService do
     end
 
     it 'categorizes articles as new, updated, or skipped' do
-      results = service.send(:process_and_store_articles, articles)
+      results = service.send(:process_and_store_articles, articles, category: 'technology')
 
       expect(results[:new].count).to eq(1)
       expect(results[:updated].count).to eq(0)
       expect(results[:skipped].count).to eq(0)
+    end
+
+    it 'sets the category from the API request parameter' do
+      results = service.send(:process_and_store_articles, articles, category: 'science')
+
+      story = NewsStory.first
+      expect(story.category).to eq('science')
     end
 
     it 'detects updated articles' do
@@ -206,7 +213,7 @@ RSpec.describe NewsFetcherService do
       # Update with new headline
       articles[0][:headline] = 'New Headline'
 
-      results = service.send(:process_and_store_articles, articles)
+      results = service.send(:process_and_store_articles, articles, category: 'technology')
 
       expect(results[:new].count).to eq(0)
       expect(results[:updated].count).to eq(1)
@@ -220,7 +227,7 @@ RSpec.describe NewsFetcherService do
              summary: 'Test summary',
              published_at: published_time)
 
-      results = service.send(:process_and_store_articles, articles)
+      results = service.send(:process_and_store_articles, articles, category: 'technology')
 
       expect(results[:new].count).to eq(0)
       expect(results[:updated].count).to eq(0)
