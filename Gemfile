@@ -34,7 +34,7 @@ gem "solid_queue"
 gem "solid_cable"
 
 # Background job processing
-gem "sidekiq", "~> 7.0"
+gem "sidekiq", "~> 8.1"
 gem "redis", "~> 5.0"
 
 # Reduces boot times through caching; required in config/boot.rb
