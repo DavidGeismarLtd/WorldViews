@@ -398,8 +398,8 @@ GEM
       zeitwerk (~> 2)
     ruby_llm-schema (0.2.5)
     securerandom (0.4.1)
-    shoulda-matchers (6.5.0)
-      activesupport (>= 5.2.0)
+    shoulda-matchers (7.0.1)
+      activesupport (>= 7.1)
     sidekiq (7.3.9)
       base64
       connection_pool (>= 2.3.0)
@@ -513,7 +513,7 @@ DEPENDENCIES
   rspec-rails (~> 6.1)
   rubocop-rails-omakase
   ruby_llm
-  shoulda-matchers (~> 6.0)
+  shoulda-matchers (~> 7.0)
   sidekiq (~> 7.0)
   solid_cable
   solid_cache
